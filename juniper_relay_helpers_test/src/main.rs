@@ -164,7 +164,7 @@ mod integration_tests {
             response.assert_status_ok();
 
             // Verify the shape of the response
-            let character_test_data = crate::get_character_test_data();
+            let character_test_data = get_character_test_data();
             response.assert_json(&json!({
                 "data": expect_json::object().contains(json!({
                     "characters": expect_json::object().contains(json!({
@@ -203,7 +203,7 @@ mod integration_tests {
             response.assert_status_ok();
 
             // Verify the shape of the response
-            let location_test_data = crate::get_location_test_data();
+            let location_test_data = get_location_test_data();
             response.assert_json(&json!({
                 "data": expect_json::object().contains(json!({
                     "locations": expect_json::object().contains(json!({

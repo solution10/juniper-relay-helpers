@@ -2,17 +2,17 @@
 mod integration_tests {
     use googletest::prelude::*;
     use juniper::{EmptyMutation, EmptySubscription, FieldResult, GraphQLObject, RootNode};
-    use juniper_relay_helpers::{RelayConnection, PageInfo};
+    use juniper_relay_helpers::{PageInfo, RelayConnection};
 
     // ---- Define the types ----
 
     #[derive(Debug, GraphQLObject, Clone, Eq, PartialEq, RelayConnection)]
-    struct User {
+    pub struct User {
         name: String,
     }
 
     #[derive(Debug, GraphQLObject, Clone, Eq, PartialEq, RelayConnection)]
-    struct Post {
+    pub struct Post {
         title: String,
     }
 

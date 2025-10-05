@@ -100,19 +100,39 @@ pub struct OffsetCursor {
     pub offset: i32,
 
     /// The number of items to return.
-    pub first: i32,
+    pub first: Option<i32>,
 }
 
 impl Cursor for OffsetCursor {
     type CursorType = OffsetCursor;
 
     fn to_raw_string(&self) -> String {
-        format!("offset:{}:{}", self.offset, self.first)
+        if let Some(first) = self.first {
+            format!("offset:{}:{}", self.offset, first)
+        } else {
+            format!("offset:{}", self.offset)
+        }
     }
 
     fn new(_raw: &str, parts: Vec<&str>) -> Result<OffsetCursor, CursorError> {
-        let offset = parts[1].parse::<i32>().unwrap_or(0);
-        let first = parts[2].parse::<i32>().unwrap_or(0);
+        if parts.len() != 2 && parts.len() != 3 {
+            return Err(CursorError::InvalidCursor);
+        }
+
+        // Offset is always defined
+        let offset = parts[1].parse::<i32>()
+            .unwrap_or(0);
+
+        // First is optional and can be missing
+        let first: Option<i32> = if parts.len() == 2{
+            None
+        } else {
+            match parts[2].parse::<i32>() {
+                Ok(f) => Some(f),
+                Err(_) => None,
+            }
+        };
+
         Ok(OffsetCursor { offset, first })
     }
 }
@@ -120,6 +140,12 @@ impl Cursor for OffsetCursor {
 impl Display for OffsetCursor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.to_raw_string())
+    }
+}
+
+impl Default for OffsetCursor {
+    fn default() -> Self {
+        OffsetCursor { offset: 0, first: None }
     }
 }
 
@@ -149,6 +175,12 @@ impl Display for StringCursor {
     }
 }
 
+impl Default for StringCursor {
+    fn default() -> Self {
+        StringCursor { value: "".to_string() }
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -157,13 +189,13 @@ mod tests {
 
     #[test]
     fn test_offset_cursor_raw_string() {
-        let cursor = OffsetCursor { offset: 1, first: 10 };
+        let cursor = OffsetCursor { offset: 1, first: Some(10) };
         assert_eq!(cursor.to_string(), "offset:1:10");
     }
 
     #[test]
     fn test_offset_cursor_encoded_string() {
-        let cursor = OffsetCursor { offset: 1, first: 10 };
+        let cursor = OffsetCursor { offset: 1, first: Some(10) };
         assert_eq!(cursor.to_encoded_string(), "b2Zmc2V0OjE6MTA=");
     }
 
@@ -171,7 +203,7 @@ mod tests {
     fn test_offset_cursor_from_encoded_string() {
         let cursor = OffsetCursor::from_encoded_string("b2Zmc2V0OjE6MTA=").unwrap();
         assert_eq!(cursor.offset, 1);
-        assert_eq!(cursor.first, 10);
+        assert_eq!(cursor.first, Some(10));
     }
 
     #[test]

@@ -1,5 +1,5 @@
 use juniper::GraphQLObject;
-use juniper_relay_helpers::{RelayConnection, RelayIdentifier, PageInfo};
+use juniper_relay_helpers::{RelayConnection, RelayIdentifier};
 
 use crate::schema::identifiers::{EntityType};
 
@@ -15,6 +15,16 @@ pub struct LocationRow {
 pub struct Location {
     pub id: RelayIdentifier<String, EntityType>,
     pub name: String,
+}
+
+/// Implement From to give a cleaner experience;
+impl From<LocationRow> for Location {
+    fn from(row: LocationRow) -> Self {
+        Location {
+            id: RelayIdentifier::new(row.id, EntityType::Location),
+            name: row.name
+        }
+    }   
 }
 
 // ----------- Test data ------------------

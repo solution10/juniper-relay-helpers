@@ -49,11 +49,11 @@ pub struct PageInfo {
 pub struct PageRequest {
     /// The number of items to return.
     #[graphql(description = "The number of items to return.")]
-    first: Option<i32>,
+    pub first: Option<i32>,
 
     /// A cursor to use as the pointer to the start of the page.
     #[graphql(description = "A cursor to use as the pointer to the start of the page.")]
-    after: Option<String>,
+    pub after: Option<String>,
 }
 
 impl PageRequest {
