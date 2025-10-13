@@ -182,6 +182,8 @@
 //!
 //! For a reference implementation, see the `OffsetCursorProvider` struct.
 //!
+//! For NoSQL use cases, there is also the `KeyedCursorProvider`.
+//!
 //! **Note**: remember that offset cursors are massively prone to off-by-one errors. The cursor provided
 //! to the `after` argument **means** after - if you're using database offsets or memory slices, you need to
 //! add `+ 1` to the provided offset to get the _actual_ starting point.

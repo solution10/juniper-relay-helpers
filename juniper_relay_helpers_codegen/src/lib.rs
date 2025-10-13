@@ -45,7 +45,7 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                     fn new(
                         nodes: &[#struct_name],
                         total_items: i32,
-                        cursor_provider: impl juniper_relay_helpers::CursorProvider,
+                        cursor_provider: impl juniper_relay_helpers::CursorProvider<Self::NodeType>,
                         page_request: Option<juniper_relay_helpers::PageRequest>
                     ) -> Self {
                         let metadata = juniper_relay_helpers::PaginationMetadata {

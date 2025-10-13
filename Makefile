@@ -6,6 +6,9 @@ build-dev:
 lint:
 	cargo clippy --all-targets --all-features -- -D warnings
 
+lint-fix:
+	cargo clippy --fix --all-targets --all-features -- -D warnings
+
 # Run all the unit tests
 test-unit:
 	cargo test --lib --profile test --verbose
