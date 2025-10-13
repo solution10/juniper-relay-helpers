@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers-v0.2.0...juniper_relay_helpers-v0.3.0) (2025-10-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* not exposing `CursorByKey` trait correctly and adjusting cursor fmt ([#21](https://github.com/solution10/juniper-relay-helpers/issues/21))
+
+### Bug Fixes
+
+* not exposing `CursorByKey` trait correctly and adjusting cursor fmt ([#21](https://github.com/solution10/juniper-relay-helpers/issues/21)) ([a0f9f5e](https://github.com/solution10/juniper-relay-helpers/commit/a0f9f5e8e1562f5ee22dca1161df64866f15dff3))
+
 ## [0.2.0](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers-v0.1.3...juniper_relay_helpers-v0.2.0) (2025-10-13)
 
 
