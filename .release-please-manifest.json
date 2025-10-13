@@ -1,5 +1,5 @@
 {
-  "juniper_relay_helpers": "0.1.3",
-  "juniper_relay_helpers_codegen": "0.1.3",
-  "juniper_relay_helpers_test": "0.1.3"
+  "juniper_relay_helpers": "0.2.0",
+  "juniper_relay_helpers_codegen": "0.2.0",
+  "juniper_relay_helpers_test": "0.1.4"
 }
