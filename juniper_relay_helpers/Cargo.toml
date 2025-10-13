@@ -1,6 +1,6 @@
 [package]
 name = "juniper_relay_helpers"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 license = "MIT"
 description = "Helper macros, structs and functions for working with Relay and Juniper"
