@@ -44,7 +44,10 @@ pub trait Cursor {
     fn from_encoded_string(input: &str) -> Result<Self::CursorType, CursorError> {
         let decoded = BASE64_URL_SAFE.decode(input)?;
         let decoded_string = String::from_utf8(decoded)?;
-        Self::new(decoded_string.as_str(), decoded_string.split(CURSOR_SEGMENT_DELIMITER).collect())
+        Self::new(
+            decoded_string.as_str(),
+            decoded_string.split(CURSOR_SEGMENT_DELIMITER).collect(),
+        )
     }
 
     /// Builds the base64 encoded variant of the cursor.
@@ -119,7 +122,10 @@ impl Cursor for OffsetCursor {
 
     fn to_raw_string(&self) -> String {
         if let Some(first) = self.first {
-            format!("offset{}{}{}{}", CURSOR_SEGMENT_DELIMITER, self.offset, CURSOR_SEGMENT_DELIMITER, first)
+            format!(
+                "offset{}{}{}{}",
+                CURSOR_SEGMENT_DELIMITER, self.offset, CURSOR_SEGMENT_DELIMITER, first
+            )
         } else {
             format!("offset{}{}", CURSOR_SEGMENT_DELIMITER, self.offset)
         }

@@ -181,9 +181,10 @@ where
 
         let mut has_previous_page = false;
         if let Some(pr) = &metadata.page_request
-            && pr.after.is_some() {
-                has_previous_page = true;
-            }
+            && pr.after.is_some()
+        {
+            has_previous_page = true;
+        }
 
         PageInfo {
             start_cursor: first_item_cursor,
@@ -478,7 +479,8 @@ mod tests {
         #[test]
         fn test_item_cursors() {
             let p = KeyedCursorProvider;
-            let items = [NoSQLItem {
+            let items = [
+                NoSQLItem {
                     id: "id-1".to_string(),
                 },
                 NoSQLItem {
@@ -486,7 +488,8 @@ mod tests {
                 },
                 NoSQLItem {
                     id: "id-3".to_string(),
-                }];
+                },
+            ];
 
             let meta = PaginationMetadata {
                 total_count: 3,

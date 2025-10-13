@@ -4,7 +4,10 @@ pub use crate::schema::character::{
 pub use crate::schema::identifiers::EntityType;
 pub use crate::schema::location::{Location, LocationRelayConnection, LocationRow};
 use juniper::{EmptyMutation, EmptySubscription, FieldResult, RootNode};
-use juniper_relay_helpers::{Cursor, CursorProvider, KeyedCursorProvider, OffsetCursor, OffsetCursorProvider, PageInfo, PageRequest, PaginationMetadata, RelayConnection, RelayEdge, RelayIdentifier, StringCursor};
+use juniper_relay_helpers::{
+    Cursor, CursorProvider, KeyedCursorProvider, OffsetCursor, OffsetCursorProvider, PageInfo,
+    PageRequest, PaginationMetadata, RelayConnection, RelayEdge, RelayIdentifier, StringCursor,
+};
 
 mod character;
 mod identifiers;
@@ -109,7 +112,8 @@ impl QueryRoot {
         if let Some(after_cursor) = &pr.after {
             // Find the starting item:
             let idx = nodes.iter().position(|item| {
-                let sub_page = PageRequest::new(first, Some(StringCursor::new(after_cursor.clone())));
+                let sub_page =
+                    PageRequest::new(first, Some(StringCursor::new(after_cursor.clone())));
                 let pagination_metadata = PaginationMetadata {
                     total_count: ctx.locations.len() as i32,
                     page_request: Some(sub_page),
