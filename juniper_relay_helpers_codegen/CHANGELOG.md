@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.0](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers_codegen-v0.1.3...juniper_relay_helpers_codegen-v0.2.0) (2025-10-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* better support for NoSQL style cursors ([#19](https://github.com/solution10/juniper-relay-helpers/issues/19))
+
+### Features
+
+* better support for NoSQL style cursors ([#19](https://github.com/solution10/juniper-relay-helpers/issues/19)) ([945b575](https://github.com/solution10/juniper-relay-helpers/commit/945b5754c4b93e286f7b5961ff9470337af5177f))
+
 ## [0.1.3](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers_codegen-v0.1.2...juniper_relay_helpers_codegen-v0.1.3) (2025-10-08)
 
 
