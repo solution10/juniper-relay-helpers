@@ -134,7 +134,7 @@ impl OffsetCursorProvider {
 // ------------- Keyed cursor provider -------------
 
 /// Trait to implement to use with items in the `KeyedCursorProvider`.
-trait CursorByKey {
+pub trait CursorByKey {
     fn cursor_key(&self) -> String;
 }
 

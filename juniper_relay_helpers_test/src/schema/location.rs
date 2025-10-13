@@ -1,5 +1,5 @@
 use juniper::GraphQLObject;
-use juniper_relay_helpers::{RelayConnection, RelayIdentifier};
+use juniper_relay_helpers::{CursorByKey, RelayConnection, RelayIdentifier};
 
 use crate::schema::identifiers::EntityType;
 
@@ -24,6 +24,12 @@ impl From<LocationRow> for Location {
             id: RelayIdentifier::new(row.id, EntityType::Location),
             name: row.name,
         }
+    }
+}
+
+impl CursorByKey for Location {
+    fn cursor_key(&self) -> String {
+        self.id.to_string()
     }
 }
 
