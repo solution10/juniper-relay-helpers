@@ -500,13 +500,13 @@ mod tests {
             };
 
             let i1_cursor = p.get_cursor_for_item(&meta, 0, &items[0]);
-            assert_eq!(i1_cursor.to_encoded_string(), "c3RyaW5nOmlkLTE=");
+            assert_eq!(i1_cursor.to_encoded_string(), "c3RyaW5nfHxpZC0x");
 
             let i2_cursor = p.get_cursor_for_item(&meta, 1, &items[1]);
-            assert_eq!(i2_cursor.to_encoded_string(), "c3RyaW5nOmlkLTI=");
+            assert_eq!(i2_cursor.to_encoded_string(), "c3RyaW5nfHxpZC0y");
 
             let i3_cursor = p.get_cursor_for_item(&meta, 2, &items[2]);
-            assert_eq!(i3_cursor.to_encoded_string(), "c3RyaW5nOmlkLTM=");
+            assert_eq!(i3_cursor.to_encoded_string(), "c3RyaW5nfHxpZC0z");
         }
 
         #[test]
@@ -535,8 +535,8 @@ mod tests {
             let page_info = p.get_page_info(&meta, &items);
             assert!(!page_info.has_prev_page);
             assert!(page_info.has_next_page); // assume next is true due to items being returned.
-            assert_eq!(page_info.start_cursor, Some("c3RyaW5nOmlkLTE=".to_string()));
-            assert_eq!(page_info.end_cursor, Some("c3RyaW5nOmlkLTM=".to_string()));
+            assert_eq!(page_info.start_cursor, Some("c3RyaW5nfHxpZC0x".to_string()));
+            assert_eq!(page_info.end_cursor, Some("c3RyaW5nfHxpZC0z".to_string()));
         }
 
         #[test]
@@ -565,8 +565,8 @@ mod tests {
             let page_info = p.get_page_info(&meta, &items);
             assert!(!page_info.has_prev_page);
             assert!(page_info.has_next_page);
-            assert_eq!(page_info.start_cursor, Some("c3RyaW5nOmlkLTE=".to_string()));
-            assert_eq!(page_info.end_cursor, Some("c3RyaW5nOmlkLTM=".to_string()));
+            assert_eq!(page_info.start_cursor, Some("c3RyaW5nfHxpZC0x".to_string()));
+            assert_eq!(page_info.end_cursor, Some("c3RyaW5nfHxpZC0z".to_string()));
         }
 
         #[test]
