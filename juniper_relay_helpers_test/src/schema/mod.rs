@@ -118,8 +118,8 @@ impl QueryRoot {
                 item_cursor.to_encoded_string().eq(after_cursor)
             });
 
-            if idx.is_some() {
-                nodes = nodes.split_off(idx.unwrap() + 1);
+            if let Some(idx) = idx {
+                nodes = nodes.split_off(idx + 1);
             }
         }
 
