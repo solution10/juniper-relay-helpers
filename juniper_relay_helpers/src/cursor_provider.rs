@@ -134,7 +134,7 @@ impl OffsetCursorProvider {
 // ------------- Keyed cursor provider -------------
 
 /// Trait to implement to use with items in the `KeyedCursorProvider`.
-trait CursorByKey {
+pub trait CursorByKey {
     fn cursor_key(&self) -> String;
 }
 
@@ -181,9 +181,10 @@ where
 
         let mut has_previous_page = false;
         if let Some(pr) = &metadata.page_request
-            && pr.after.is_some() {
-                has_previous_page = true;
-            }
+            && pr.after.is_some()
+        {
+            has_previous_page = true;
+        }
 
         PageInfo {
             start_cursor: first_item_cursor,
@@ -478,7 +479,8 @@ mod tests {
         #[test]
         fn test_item_cursors() {
             let p = KeyedCursorProvider;
-            let items = [NoSQLItem {
+            let items = [
+                NoSQLItem {
                     id: "id-1".to_string(),
                 },
                 NoSQLItem {
@@ -486,7 +488,8 @@ mod tests {
                 },
                 NoSQLItem {
                     id: "id-3".to_string(),
-                }];
+                },
+            ];
 
             let meta = PaginationMetadata {
                 total_count: 3,
@@ -497,13 +500,13 @@ mod tests {
             };
 
             let i1_cursor = p.get_cursor_for_item(&meta, 0, &items[0]);
-            assert_eq!(i1_cursor.to_encoded_string(), "c3RyaW5nOmlkLTE=");
+            assert_eq!(i1_cursor.to_encoded_string(), "c3RyaW5nfHxpZC0x");
 
             let i2_cursor = p.get_cursor_for_item(&meta, 1, &items[1]);
-            assert_eq!(i2_cursor.to_encoded_string(), "c3RyaW5nOmlkLTI=");
+            assert_eq!(i2_cursor.to_encoded_string(), "c3RyaW5nfHxpZC0y");
 
             let i3_cursor = p.get_cursor_for_item(&meta, 2, &items[2]);
-            assert_eq!(i3_cursor.to_encoded_string(), "c3RyaW5nOmlkLTM=");
+            assert_eq!(i3_cursor.to_encoded_string(), "c3RyaW5nfHxpZC0z");
         }
 
         #[test]
@@ -532,8 +535,8 @@ mod tests {
             let page_info = p.get_page_info(&meta, &items);
             assert!(!page_info.has_prev_page);
             assert!(page_info.has_next_page); // assume next is true due to items being returned.
-            assert_eq!(page_info.start_cursor, Some("c3RyaW5nOmlkLTE=".to_string()));
-            assert_eq!(page_info.end_cursor, Some("c3RyaW5nOmlkLTM=".to_string()));
+            assert_eq!(page_info.start_cursor, Some("c3RyaW5nfHxpZC0x".to_string()));
+            assert_eq!(page_info.end_cursor, Some("c3RyaW5nfHxpZC0z".to_string()));
         }
 
         #[test]
@@ -562,8 +565,8 @@ mod tests {
             let page_info = p.get_page_info(&meta, &items);
             assert!(!page_info.has_prev_page);
             assert!(page_info.has_next_page);
-            assert_eq!(page_info.start_cursor, Some("c3RyaW5nOmlkLTE=".to_string()));
-            assert_eq!(page_info.end_cursor, Some("c3RyaW5nOmlkLTM=".to_string()));
+            assert_eq!(page_info.start_cursor, Some("c3RyaW5nfHxpZC0x".to_string()));
+            assert_eq!(page_info.end_cursor, Some("c3RyaW5nfHxpZC0z".to_string()));
         }
 
         #[test]

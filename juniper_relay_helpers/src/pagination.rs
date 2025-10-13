@@ -97,7 +97,7 @@ mod tests {
         assert_eq!(pr.first, Some(10));
         assert_eq!(
             pr.after,
-            Some("c3RyaW5nOnNvbWUtc3RyaW5nLWN1cnNvcg==".to_string())
+            Some("c3RyaW5nfHxzb21lLXN0cmluZy1jdXJzb3I=".to_string())
         );
     }
 
@@ -105,7 +105,7 @@ mod tests {
     fn test_decoding_cursor_from_page_request() {
         let request = PageRequest {
             first: Some(10),
-            after: Some("b2Zmc2V0OjE6MTA=".to_string()),
+            after: Some("b2Zmc2V0fHwxfHwxMA==".to_string()),
         };
         let decoded_cursor = request.parsed_cursor::<OffsetCursor>().unwrap();
         assert_eq!(decoded_cursor.unwrap().offset, 1);

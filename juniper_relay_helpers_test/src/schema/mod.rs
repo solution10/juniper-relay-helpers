@@ -5,8 +5,8 @@ pub use crate::schema::identifiers::EntityType;
 pub use crate::schema::location::{Location, LocationRelayConnection, LocationRow};
 use juniper::{EmptyMutation, EmptySubscription, FieldResult, RootNode};
 use juniper_relay_helpers::{
-    OffsetCursor, OffsetCursorProvider, PageInfo, PageRequest, RelayConnection, RelayEdge,
-    RelayIdentifier,
+    Cursor, CursorProvider, KeyedCursorProvider, OffsetCursor, OffsetCursorProvider, PageInfo,
+    PageRequest, PaginationMetadata, RelayConnection, RelayEdge, RelayIdentifier, StringCursor,
 };
 
 mod character;
@@ -90,6 +90,52 @@ impl QueryRoot {
             ctx.locations.len() as i32,
             OffsetCursorProvider::new(),
             Some(PageRequest::new(first, after)),
+        ))
+    }
+
+    /// Queries for all locations in the "database"
+    /// This method makes use of the String cursor provider to show how you can use that one too!
+    async fn locations_string_cursor(
+        first: Option<i32>,
+        after: Option<StringCursor>,
+        ctx: &Context,
+    ) -> FieldResult<LocationRelayConnection> {
+        let mut nodes = ctx
+            .locations
+            .iter()
+            .map(|row| Location::from(row.clone()))
+            .collect::<Vec<Location>>();
+
+        let cp = KeyedCursorProvider;
+        let pr = PageRequest::new(first, after);
+
+        if let Some(after_cursor) = &pr.after {
+            // Find the starting item:
+            let idx = nodes.iter().position(|item| {
+                let sub_page =
+                    PageRequest::new(first, Some(StringCursor::new(after_cursor.clone())));
+                let pagination_metadata = PaginationMetadata {
+                    total_count: ctx.locations.len() as i32,
+                    page_request: Some(sub_page),
+                };
+                let item_cursor = cp.get_cursor_for_item(&pagination_metadata, 0, item);
+                item_cursor.to_encoded_string().eq(after_cursor)
+            });
+
+            if let Some(idx) = idx {
+                nodes = nodes.split_off(idx + 1);
+            }
+        }
+
+        if let Some(first) = first {
+            nodes.truncate(first as usize);
+        }
+
+        Ok(LocationRelayConnection::new(
+            &nodes,
+            ctx.locations.len() as i32,
+            KeyedCursorProvider,
+            Some(pr),
         ))
     }
 }

@@ -71,7 +71,7 @@ mod tests {
             },
         );
         assert_eq!(edge.node.name, "Lune");
-        assert_eq!(edge.cursor, Some("b2Zmc2V0OjA6MTA=".into()));
+        assert_eq!(edge.cursor, Some("b2Zmc2V0fHwwfHwxMA==".into()));
 
         let edge2 = UserRelayEdge::new_raw_cursor(
             User {

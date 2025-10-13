@@ -3,6 +3,8 @@ use base64::prelude::*;
 use juniper::{GraphQLScalar, ParseScalarResult, ParseScalarValue, ScalarToken, ScalarValue};
 use std::fmt::{Display, Formatter};
 
+const CURSOR_SEGMENT_DELIMITER: &str = "||";
+
 /// Cursor struct that builds into an opaque string.
 /// Cursors are present both in the edges and in the PageInfo within the Connection.
 ///
@@ -42,7 +44,10 @@ pub trait Cursor {
     fn from_encoded_string(input: &str) -> Result<Self::CursorType, CursorError> {
         let decoded = BASE64_URL_SAFE.decode(input)?;
         let decoded_string = String::from_utf8(decoded)?;
-        Self::new(decoded_string.as_str(), decoded_string.split(':').collect())
+        Self::new(
+            decoded_string.as_str(),
+            decoded_string.split(CURSOR_SEGMENT_DELIMITER).collect(),
+        )
     }
 
     /// Builds the base64 encoded variant of the cursor.
@@ -117,9 +122,12 @@ impl Cursor for OffsetCursor {
 
     fn to_raw_string(&self) -> String {
         if let Some(first) = self.first {
-            format!("offset:{}:{}", self.offset, first)
+            format!(
+                "offset{}{}{}{}",
+                CURSOR_SEGMENT_DELIMITER, self.offset, CURSOR_SEGMENT_DELIMITER, first
+            )
         } else {
-            format!("offset:{}", self.offset)
+            format!("offset{}{}", CURSOR_SEGMENT_DELIMITER, self.offset)
         }
     }
 
@@ -166,7 +174,7 @@ impl Cursor for StringCursor {
     type CursorType = StringCursor;
 
     fn to_raw_string(&self) -> String {
-        format!("string:{}", self.value.clone())
+        format!("string{}{}", CURSOR_SEGMENT_DELIMITER, self.value.clone())
     }
 
     fn new(_raw: &str, parts: Vec<&str>) -> Result<Self::CursorType, CursorError> {
@@ -216,7 +224,7 @@ mod tests {
                 offset: 1,
                 first: Some(10),
             };
-            assert_eq!(cursor.to_string(), "offset:1:10");
+            assert_eq!(cursor.to_string(), "offset||1||10");
         }
 
         #[test]
@@ -225,12 +233,12 @@ mod tests {
                 offset: 1,
                 first: Some(10),
             };
-            assert_eq!(cursor.to_encoded_string(), "b2Zmc2V0OjE6MTA=");
+            assert_eq!(cursor.to_encoded_string(), "b2Zmc2V0fHwxfHwxMA==");
         }
 
         #[test]
         fn test_offset_cursor_from_encoded_string() {
-            let cursor = OffsetCursor::from_encoded_string("b2Zmc2V0OjE6MTA=").unwrap();
+            let cursor = OffsetCursor::from_encoded_string("b2Zmc2V0fHwxfHwxMA==").unwrap();
             assert_eq!(cursor.offset, 1);
             assert_eq!(cursor.first, Some(10));
         }
@@ -244,7 +252,7 @@ mod tests {
             let cursor = StringCursor {
                 value: "some-cursor".to_string(),
             };
-            assert_eq!(cursor.to_string(), "string:some-cursor");
+            assert_eq!(cursor.to_string(), "string||some-cursor");
         }
 
         #[test]
@@ -252,12 +260,12 @@ mod tests {
             let cursor = StringCursor {
                 value: "some-cursor".to_string(),
             };
-            assert_eq!(cursor.to_encoded_string(), "c3RyaW5nOnNvbWUtY3Vyc29y");
+            assert_eq!(cursor.to_encoded_string(), "c3RyaW5nfHxzb21lLWN1cnNvcg==");
         }
 
         #[test]
         fn test_string_cursor_from_encoded_string() {
-            let cursor = StringCursor::from_encoded_string("c3RyaW5nOnNvbWUtY3Vyc29y").unwrap();
+            let cursor = StringCursor::from_encoded_string("c3RyaW5nfHxzb21lLWN1cnNvcg==").unwrap();
             assert_eq!(cursor.value, "some-cursor");
         }
     }
