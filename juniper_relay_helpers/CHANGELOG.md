@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers-v0.3.0...juniper_relay_helpers-v0.3.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* add missing Clone on cursors ([#23](https://github.com/solution10/juniper-relay-helpers/issues/23)) ([f6b23a5](https://github.com/solution10/juniper-relay-helpers/commit/f6b23a500942962612277cec5c4feafcb5e100ad))
+
 ## [0.3.0](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers-v0.2.0...juniper_relay_helpers-v0.3.0) (2025-10-13)
 
 
