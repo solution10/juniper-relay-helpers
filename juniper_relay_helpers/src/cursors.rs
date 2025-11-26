@@ -97,7 +97,7 @@ where
 }
 
 /// A simple offset-based cursor.
-#[derive(Debug, GraphQLScalar, Default)]
+#[derive(Debug, GraphQLScalar, Default, Clone)]
 #[graphql(
     name = "OffsetCursor",
     to_output_with = Self::to_output,
@@ -158,7 +158,7 @@ impl Display for OffsetCursor {
 
 /// Built-in cursor type for when the cursor is just a string. Usually useful for things like
 /// NoSQL systems that return something opaque to you.
-#[derive(Debug, GraphQLScalar)]
+#[derive(Debug, GraphQLScalar, Clone)]
 pub struct StringCursor {
     /// The value of the cursor.
     pub value: String,
