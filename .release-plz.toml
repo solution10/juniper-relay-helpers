@@ -1,0 +1,15 @@
+[workspace]
+
+
+[[juniper_relay_helpers]]
+name = "juniper_relay_helpers"
+version_group="juniper_relay_helpers"
+publish = true
+
+[[juniper_relay_helpers_codegen]]
+name = "juniper_relay_helpers_codegen"
+version_group="juniper_relay_helpers"
+publish = true
+
+[[juniper_relay_helpers_test]]
+publish = false
