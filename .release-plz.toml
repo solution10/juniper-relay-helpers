@@ -1,15 +1,15 @@
 [workspace]
 
 
-[[juniper_relay_helpers]]
+[[package]]
 name = "juniper_relay_helpers"
 version_group="juniper_relay_helpers"
 publish = true
 
-[[juniper_relay_helpers_codegen]]
+[[package]]
 name = "juniper_relay_helpers_codegen"
 version_group="juniper_relay_helpers"
 publish = true
 
-[[juniper_relay_helpers_test]]
+[[package]]
 publish = false
