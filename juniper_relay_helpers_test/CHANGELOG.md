@@ -12,6 +12,30 @@
 
 
 
+## [0.1.6](https://github.com/solution10/juniper-relay-helpers/releases/tag/juniper_relay_helpers_test-v0.1.6) - 2025-11-28
+
+### Added
+
+- adding more documentation ([#2](https://github.com/solution10/juniper-relay-helpers/pull/2))
+- cursor providers ([#1](https://github.com/solution10/juniper-relay-helpers/pull/1))
+- make cursors scalar types
+
+### Fixed
+
+- [**breaking**] not exposing `CursorByKey` trait correctly and adjusting cursor fmt ([#21](https://github.com/solution10/juniper-relay-helpers/pull/21))
+
+### Other
+
+- release master ([#24](https://github.com/solution10/juniper-relay-helpers/pull/24))
+- release master ([#22](https://github.com/solution10/juniper-relay-helpers/pull/22))
+- release master ([#20](https://github.com/solution10/juniper-relay-helpers/pull/20))
+- release master ([#17](https://github.com/solution10/juniper-relay-helpers/pull/17))
+- reformat ([#18](https://github.com/solution10/juniper-relay-helpers/pull/18))
+- release master ([#15](https://github.com/solution10/juniper-relay-helpers/pull/15))
+- release master ([#14](https://github.com/solution10/juniper-relay-helpers/pull/14))
+- release master ([#6](https://github.com/solution10/juniper-relay-helpers/pull/6))
+- rename crate to include juniper
+
 ## 0.1.0 (2025-10-06)
 
 
