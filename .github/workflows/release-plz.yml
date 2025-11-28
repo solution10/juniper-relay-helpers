@@ -2,7 +2,7 @@ name: 🙏 Release-plz
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
 
