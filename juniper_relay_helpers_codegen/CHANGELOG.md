@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.1](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers_codegen-v0.2.0...juniper_relay_helpers_codegen-v0.3.1) - 2026-06-27
+
+### Added
+
+- add context marker to RelayConnection ([#26](https://github.com/solution10/juniper-relay-helpers/pull/26))
+
 ## [0.2.0](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers_codegen-v0.1.3...juniper_relay_helpers_codegen-v0.2.0) (2025-10-13)
 
 
