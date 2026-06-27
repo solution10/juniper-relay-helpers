@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.3](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers-v0.3.2...juniper_relay_helpers-v0.3.3) - 2026-06-27
+
+### Other
+
+- updated the following local packages: juniper_relay_helpers_codegen
+
 ## [0.3.2](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers-v0.3.1...juniper_relay_helpers-v0.3.2) - 2026-06-27
 
 ### Other
