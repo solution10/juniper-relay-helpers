@@ -1,8 +1,10 @@
+pub use crate::context::Context;
 pub use crate::schema::character::{
     Character, CharacterRelayConnection, CharacterRelayEdge, CharacterRow,
 };
 pub use crate::schema::identifiers::EntityType;
 pub use crate::schema::location::{Location, LocationRelayConnection, LocationRow};
+pub use crate::schema::music::{MusicRow, MusicTrack};
 use juniper::{EmptyMutation, EmptySubscription, FieldResult, RootNode};
 use juniper_relay_helpers::{
     Cursor, CursorProvider, KeyedCursorProvider, OffsetCursor, OffsetCursorProvider, PageInfo,
@@ -12,18 +14,12 @@ use juniper_relay_helpers::{
 mod character;
 mod identifiers;
 mod location;
+mod music;
 
 pub use crate::schema::character::get_character_test_data;
 pub use crate::schema::location::get_location_test_data;
+pub use crate::schema::music::get_music_test_data;
 
-// ---------- Context -------------
-
-#[derive(Clone)]
-pub struct Context {
-    pub characters: Vec<CharacterRow>,
-    pub locations: Vec<LocationRow>,
-}
-impl juniper::Context for Context {}
 
 // --------- QueryRoot ------------
 
@@ -137,6 +133,10 @@ impl QueryRoot {
             KeyedCursorProvider,
             Some(pr),
         ))
+    }
+
+    async fn music(ctx: &Context) -> FieldResult<Vec<MusicTrack>> {
+        Ok(ctx.music.iter().map(|r| r.clone().into()).collect())
     }
 }
 

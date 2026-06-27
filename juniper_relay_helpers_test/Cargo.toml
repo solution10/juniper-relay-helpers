@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 googletest = "0.14"
 juniper_relay_helpers = { path = "../juniper_relay_helpers" }
-juniper = { workspace = true, features = ["schema-language"] }
+juniper = { workspace = true, features = ["schema-language", "uuid"] }
 uuid = { workspace = true, features = ["v4"] }
 
 # Test server deps:

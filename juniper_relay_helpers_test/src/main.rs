@@ -6,7 +6,8 @@
 //! Application is also used for integration tests.
 //!
 
-use crate::schema::{Context, QueryRoot, Schema, get_character_test_data, get_location_test_data};
+use crate::schema::{QueryRoot, Schema, get_character_test_data, get_location_test_data, get_music_test_data};
+use crate::context::Context;
 use axum::Router;
 use axum::extract::State;
 use axum::response::{Html, IntoResponse};
@@ -20,6 +21,7 @@ use tracing::info;
 
 mod generated_schema;
 mod schema;
+mod context;
 
 #[derive(Clone)]
 struct AppContext {
@@ -41,6 +43,7 @@ fn build_app() -> Router {
         graphql_context: Context {
             characters: get_character_test_data(),
             locations: get_location_test_data(),
+            music: get_music_test_data(),
         },
     };
 
@@ -95,6 +98,15 @@ mod integration_tests {
         response.assert_status_ok();
     }
 
+    const ALL_MUSIC_QUERY: &str = r"
+            query Music {
+                music {
+                    id
+                    title
+                    locationsHeard { id name }
+                }
+            }";
+
     const ALL_CHARACTERS_QUERY: &str = r"
             query Characters {
                 characters {
@@ -134,6 +146,41 @@ mod integration_tests {
                     }
                 }
             }";
+
+    mod music_tests {
+        use crate::build_app;
+        use crate::integration_tests::ALL_MUSIC_QUERY;
+        use axum_test::TestServer;
+        use axum_test::expect_json::__private::serde_json;
+        use axum_test::expect_json::__private::serde_json::json;
+        use axum_test::expect_json;
+        use serde::{Deserialize, Serialize};
+
+        #[derive(Serialize, Deserialize, Debug, Clone)]
+        struct GraphQLPayload {
+            query: String,
+            variables: Option<serde_json::Value>,
+        }
+
+        #[tokio::test]
+        async fn test_music_query() {
+            let app = build_app();
+            let server = TestServer::new(app).unwrap();
+            let response = server
+                .post("/graphql")
+                .json(&GraphQLPayload {
+                    query: ALL_MUSIC_QUERY.to_string(),
+                    variables: None,
+                })
+                .await;
+            response.assert_status_ok();
+            response.assert_json(&json!({
+                "data": expect_json::object().contains(json!({
+                    "music": expect_json::array().len(2)
+                }))
+            }));
+        }
+    }
 
     mod connection_tests {
         use crate::build_app;

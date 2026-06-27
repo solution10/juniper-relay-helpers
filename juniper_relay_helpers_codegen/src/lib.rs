@@ -4,9 +4,23 @@ use quote::quote;
 use syn::{Data, DeriveInput, parse_macro_input};
 
 /// Macro that will generate Connection and Edge structs for you to use when returning lists.
-#[proc_macro_derive(RelayConnection)]
+#[proc_macro_derive(RelayConnection, attributes(relay))]
 pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
+
+    let context_attr: Option<syn::Path> = input.attrs.iter()
+        .find(|a| a.path().is_ident("relay"))
+        .and_then(|a| a.parse_args::<syn::MetaNameValue>().ok())
+        .filter(|mnv| mnv.path.is_ident("context"))
+        .and_then(|mnv| {
+            if let syn::Expr::Path(p) = &mnv.value { Some(p.path.clone()) } else { None }
+        });
+
+    let context_clause = if let Some(ref ctx_path) = context_attr {
+        quote! { , context = #ctx_path }
+    } else {
+        quote! {}
+    };
 
     let out = match input.data {
         Data::Struct(_s) => {
@@ -30,6 +44,7 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                 #[graphql(
                     name = #connection_gql_name,
                     description = #connection_gql_desc
+                    #context_clause
                 )]
                 pub struct #connection_name {
                     pub count: i32,
@@ -69,6 +84,7 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                 #[graphql(
                     name = #edge_gql_name,
                     description = #edge_gql_desc
+                    #context_clause
                 )]
                 pub struct #edge_name {
                     pub node: #struct_name,
