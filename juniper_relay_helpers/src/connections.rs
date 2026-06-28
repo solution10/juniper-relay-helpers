@@ -65,13 +65,10 @@ mod tests {
             User {
                 name: "Lune".to_owned(),
             },
-            OffsetCursor {
-                offset: 0,
-                first: Some(10),
-            },
+            OffsetCursor::new(0),
         );
         assert_eq!(edge.node.name, "Lune");
-        assert_eq!(edge.cursor, Some("b2Zmc2V0fHwwfHwxMA==".into()));
+        assert_eq!(edge.cursor, Some("b2Zmc2V0fHww".into()));
 
         let edge2 = UserRelayEdge::new_raw_cursor(
             User {

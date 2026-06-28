@@ -105,7 +105,7 @@ mod tests {
     fn test_decoding_cursor_from_page_request() {
         let request = PageRequest {
             first: Some(10),
-            after: Some("b2Zmc2V0fHwxfHwxMA==".to_string()),
+            after: Some("b2Zmc2V0fHwx".to_string()),
         };
         let decoded_cursor = request.parsed_cursor::<OffsetCursor>().unwrap();
         assert_eq!(decoded_cursor.unwrap().offset, 1);

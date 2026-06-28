@@ -13,7 +13,8 @@ uuid = { workspace = true, features = ["v4"] }
 tokio = {  version = "1", features = ["full"] }
 axum = "0.8"
 juniper_axum = "0.3"
-axum-test = "18"
+axum-test = "21"
 tracing = { version = "0.1", features = ["log"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 serde = { version = "1.0.228", features = ["derive"] }
+serde_json = { version = "1.0.150" }

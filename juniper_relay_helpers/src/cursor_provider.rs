@@ -64,10 +64,7 @@ impl<ItemT> CursorProvider<ItemT> for OffsetCursorProvider {
             None => default_cursor,
         };
 
-        OffsetCursor {
-            offset: current_cursor.offset + offset_adjust + item_idx,
-            first: current_cursor.first,
-        }
+        OffsetCursor::new(current_cursor.offset + offset_adjust + item_idx)
     }
 
     fn get_page_info(&self, metadata: &PaginationMetadata, items: &[ItemT]) -> PageInfo {
@@ -238,20 +235,14 @@ mod tests {
             assert_eq!(
                 pi.start_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 0,
-                        first: None
-                    }
+                    OffsetCursor::new(0)
                     .to_encoded_string()
                 )
             );
             assert_eq!(
                 pi.end_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 1,
-                        first: None
-                    }
+                    OffsetCursor::new(1)
                     .to_encoded_string()
                 )
             );
@@ -276,20 +267,14 @@ mod tests {
             assert_eq!(
                 pi.start_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 0,
-                        first: None
-                    }
+                    OffsetCursor::new(0)
                     .to_encoded_string()
                 )
             );
             assert_eq!(
                 pi.end_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 1,
-                        first: None
-                    }
+                    OffsetCursor::new(1)
                     .to_encoded_string()
                 )
             );
@@ -315,20 +300,14 @@ mod tests {
             assert_eq!(
                 pi.start_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 0,
-                        first: None
-                    }
+                    OffsetCursor::new(0)
                     .to_encoded_string()
                 )
             );
             assert_eq!(
                 pi.end_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 1,
-                        first: None
-                    }
+                    OffsetCursor::new(1)
                     .to_encoded_string()
                 )
             );
@@ -372,20 +351,14 @@ mod tests {
             assert_eq!(
                 pi1.start_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 0,
-                        first: None
-                    }
+                    OffsetCursor::new(0)
                     .to_encoded_string()
                 )
             );
             assert_eq!(
                 pi1.end_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 4,
-                        first: None
-                    }
+                    OffsetCursor::new(4)
                     .to_encoded_string()
                 )
             );
@@ -405,20 +378,14 @@ mod tests {
             assert_eq!(
                 pi2.start_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 5,
-                        first: None
-                    }
+                    OffsetCursor::new(5)
                     .to_encoded_string()
                 )
             );
             assert_eq!(
                 pi2.end_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 9,
-                        first: None
-                    }
+                    OffsetCursor::new(9)
                     .to_encoded_string()
                 )
             );
@@ -438,20 +405,14 @@ mod tests {
             assert_eq!(
                 pi3.start_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 10,
-                        first: None
-                    }
+                    OffsetCursor::new(10)
                     .to_encoded_string()
                 )
             );
             assert_eq!(
                 pi3.end_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 12,
-                        first: None
-                    }
+                    OffsetCursor::new(12)
                     .to_encoded_string()
                 )
             );

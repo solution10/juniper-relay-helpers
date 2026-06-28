@@ -93,7 +93,7 @@ mod integration_tests {
     #[tokio::test]
     async fn test_server_starts() {
         let app = build_app();
-        let server = TestServer::new(app).unwrap();
+        let server = TestServer::new(app);
         let response = server.get("/").await;
         response.assert_status_ok();
     }
@@ -165,7 +165,7 @@ mod integration_tests {
         #[tokio::test]
         async fn test_music_query() {
             let app = build_app();
-            let server = TestServer::new(app).unwrap();
+            let server = TestServer::new(app);
             let response = server
                 .post("/graphql")
                 .json(&GraphQLPayload {
@@ -188,10 +188,9 @@ mod integration_tests {
         use crate::schema::{EntityType, get_character_test_data, get_location_test_data};
         use axum_test::TestServer;
         use axum_test::expect_json;
-        use axum_test::expect_json::__private::serde_json;
-        use axum_test::expect_json::__private::serde_json::json;
         use juniper_relay_helpers::RelayIdentifier;
         use serde::{Deserialize, Serialize};
+        use serde_json::json;
 
         #[derive(Serialize, Deserialize, Debug, Clone)]
         struct GraphQLPayload {
@@ -202,7 +201,7 @@ mod integration_tests {
         #[tokio::test]
         async fn test_character_connections() {
             let app = build_app();
-            let server = TestServer::new(app).unwrap();
+            let server = TestServer::new(app);
 
             let response = server
                 .post("/graphql")
@@ -235,13 +234,13 @@ mod integration_tests {
                         }))
                     }))
                 }))
-            }))
+            }));
         }
 
         #[tokio::test]
         async fn test_location_connections() {
             let app = build_app();
-            let server = TestServer::new(app).unwrap();
+            let server = TestServer::new(app);
 
             let response = server
                 .post("/graphql")
@@ -274,13 +273,13 @@ mod integration_tests {
                         }))
                     }))
                 }))
-            }))
+            }));
         }
 
         #[tokio::test]
         async fn test_relay_identifier_uuid() {
             let app = build_app();
-            let server = TestServer::new(app).unwrap();
+            let server = TestServer::new(app);
             let response = server
                 .post("/graphql")
                 .json(&GraphQLPayload {
@@ -314,7 +313,7 @@ mod integration_tests {
         #[tokio::test]
         async fn test_relay_identifier_string() {
             let app = build_app();
-            let server = TestServer::new(app).unwrap();
+            let server = TestServer::new(app);
             let response = server
                 .post("/graphql")
                 .json(&GraphQLPayload {

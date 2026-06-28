@@ -43,10 +43,7 @@ impl QueryRoot {
                             id: RelayIdentifier::new(row.id, EntityType::Character),
                             name: row.name.clone(),
                         },
-                        OffsetCursor {
-                            offset: idx as i32,
-                            first: Some(10),
-                        },
+                        OffsetCursor::new(idx as i32),
                     )
                 })
                 .collect(),
