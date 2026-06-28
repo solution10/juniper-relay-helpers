@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.0](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers_codegen-v0.3.2...juniper_relay_helpers_codegen-v0.4.0) - 2026-06-28
+
+### Added
+
+- [**breaking**] large rework of OffsetCursor ([#30](https://github.com/solution10/juniper-relay-helpers/pull/30))
+
+### Other
+
+- drop Debug, Eq and PartialEq requirements for Nodes ([#32](https://github.com/solution10/juniper-relay-helpers/pull/32))
+- update docs with custom context info ([#31](https://github.com/solution10/juniper-relay-helpers/pull/31))
+
 ## [0.3.1](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers_codegen-v0.2.0...juniper_relay_helpers_codegen-v0.3.1) - 2026-06-27
 
 ### Added
