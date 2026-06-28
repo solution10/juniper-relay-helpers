@@ -75,12 +75,19 @@ use juniper_relay_helpers::{
   RelayIdentifier
 };
 
+// You can make use of a custom context and apply it to the generated entities too:
+pub struct MyCustomContext {
+    pub database: Vec<String>
+}
+impl juniper::Context for MyCustomContext {}
+
 #[derive(IdentiferTypeDiscriminator)]
 enum MyEntityTypes {
   Character
 }
 
 #[derive(GraphQLObject, RelayConnection)]
+#[relay(context = MyCustomContext)]
 struct User {
   id: RelayIdentifier<UUID, MyEntityTypes>,
   name: String
