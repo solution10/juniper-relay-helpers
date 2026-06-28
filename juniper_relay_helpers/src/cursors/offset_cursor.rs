@@ -23,11 +23,7 @@ impl OffsetCursor {
     /// valid, you need to check it first and pass in the arg.
     /// /// Passing None to `first` assumes that you requested all results, and so there cannot be a next page.
     pub fn next_page(&self, first: Option<i32>, total: u64) -> Option<OffsetCursor> {
-        if first.is_none() {
-            return None;
-        }
-        let first = first.unwrap();
-
+        let first = first?;
         let last_item = self.offset.checked_add(first).unwrap_or(total as i32);
 
         // Have to check this here because the count - 1 can trigger and underflow and Rust is beautiful
@@ -49,10 +45,7 @@ impl OffsetCursor {
     /// valid, you need to check it first.
     /// Passing None to `first` assumes that you requested all results, and so there cannot be a prev page.
     pub fn previous_page(&self, first: Option<i32>) -> Option<OffsetCursor> {
-        if first.is_none() {
-            return None;
-        }
-        let first = first.unwrap();
+        let first = first?;
         if self.offset > 0 {
             Some(OffsetCursor::new(
                 // Safety: don't let these overflow since they're user provided.
