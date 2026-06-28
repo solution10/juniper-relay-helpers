@@ -248,6 +248,49 @@
 //! The use of `RelayIdentifier` is entirely optional - you can use your own identifiers or the `juniper::ID` type
 //! and still make use of the `RelayConnection` derive macro. It's just here if you want it.
 //!
+//! # Custom Context
+//!
+//! If you're using a custom context with Juniper (and you almost certainly are), you need to add an attribute to your
+//! definitions to be able to use it.
+//!
+//!```
+//! use juniper::{FieldResult, GraphQLObject};
+//! use juniper_relay_helpers_codegen::RelayConnection;
+//!
+//! pub struct MyContext {
+//!    pub database: Vec<String>
+//! }
+//! impl juniper::Context for MyContext {}
+//!
+//! #[derive(GraphQLObject, RelayConnection, Clone, Debug, Eq, PartialEq)]
+//! #[relay(context = MyContext)]
+//! pub struct Character {
+//!     pub name: String
+//! }
+//!
+//! // The same works for if you're using the graphql_object macro:
+//!
+//! #[derive(RelayConnection, Clone, Debug, Eq, PartialEq)]
+//! #[relay(context = MyContext)]
+//! pub struct Music {
+//!    pub name: String,
+//!    pub duration: i32,
+//! }
+//!
+//! #[juniper::graphql_object]
+//! impl Music {
+//!    fn name(&self) -> FieldResult<String> {
+//!        Ok(self.name.clone())
+//!    }
+//!
+//!    fn similar_tracks(&self, ctx: &MyContext) -> FieldResult<Vec<String>> {
+//!        Ok(ctx.database.clone())
+//!    }
+//! }
+//!
+//! ```
+//!
+//!
 //! # Example App
 //!
 //! You can see the library in action in the example app in `/juniper_relay_helpers_test`.
