@@ -64,10 +64,7 @@ impl<ItemT> CursorProvider<ItemT> for OffsetCursorProvider {
             None => default_cursor,
         };
 
-        OffsetCursor {
-            offset: current_cursor.offset + offset_adjust + item_idx,
-            first: current_cursor.first,
-        }
+        OffsetCursor::new(current_cursor.offset + offset_adjust + item_idx)
     }
 
     fn get_page_info(&self, metadata: &PaginationMetadata, items: &[ItemT]) -> PageInfo {
@@ -92,8 +89,6 @@ impl<ItemT> CursorProvider<ItemT> for OffsetCursorProvider {
             false
         };
 
-        let last_index = items.len() - 1;
-
         PageInfo {
             has_prev_page: current_cursor.offset > 0,
             has_next_page,
@@ -106,6 +101,7 @@ impl<ItemT> CursorProvider<ItemT> for OffsetCursorProvider {
                 None
             },
             end_cursor: if !items.is_empty() {
+                let last_index = items.len() - 1;
                 Some(
                     self.get_cursor_for_item(metadata, last_index as i32, &items[last_index])
                         .to_encoded_string(),
@@ -238,20 +234,14 @@ mod tests {
             assert_eq!(
                 pi.start_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 0,
-                        first: None
-                    }
+                    OffsetCursor::new(0)
                     .to_encoded_string()
                 )
             );
             assert_eq!(
                 pi.end_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 1,
-                        first: None
-                    }
+                    OffsetCursor::new(1)
                     .to_encoded_string()
                 )
             );
@@ -276,20 +266,14 @@ mod tests {
             assert_eq!(
                 pi.start_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 0,
-                        first: None
-                    }
+                    OffsetCursor::new(0)
                     .to_encoded_string()
                 )
             );
             assert_eq!(
                 pi.end_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 1,
-                        first: None
-                    }
+                    OffsetCursor::new(1)
                     .to_encoded_string()
                 )
             );
@@ -315,20 +299,14 @@ mod tests {
             assert_eq!(
                 pi.start_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 0,
-                        first: None
-                    }
+                    OffsetCursor::new(0)
                     .to_encoded_string()
                 )
             );
             assert_eq!(
                 pi.end_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 1,
-                        first: None
-                    }
+                    OffsetCursor::new(1)
                     .to_encoded_string()
                 )
             );
@@ -372,20 +350,14 @@ mod tests {
             assert_eq!(
                 pi1.start_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 0,
-                        first: None
-                    }
+                    OffsetCursor::new(0)
                     .to_encoded_string()
                 )
             );
             assert_eq!(
                 pi1.end_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 4,
-                        first: None
-                    }
+                    OffsetCursor::new(4)
                     .to_encoded_string()
                 )
             );
@@ -405,20 +377,14 @@ mod tests {
             assert_eq!(
                 pi2.start_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 5,
-                        first: None
-                    }
+                    OffsetCursor::new(5)
                     .to_encoded_string()
                 )
             );
             assert_eq!(
                 pi2.end_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 9,
-                        first: None
-                    }
+                    OffsetCursor::new(9)
                     .to_encoded_string()
                 )
             );
@@ -438,22 +404,44 @@ mod tests {
             assert_eq!(
                 pi3.start_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 10,
-                        first: None
-                    }
+                    OffsetCursor::new(10)
                     .to_encoded_string()
                 )
             );
             assert_eq!(
                 pi3.end_cursor,
                 Some(
-                    OffsetCursor {
-                        offset: 12,
-                        first: None
-                    }
+                    OffsetCursor::new(12)
                     .to_encoded_string()
                 )
+            );
+        }
+
+        #[test]
+        fn test_page_info_empty_list() {
+            let p = OffsetCursorProvider::new();
+            let total_items = 0;
+            let data: Vec<String> = vec![];
+
+            let pi1 = p.get_page_info(
+                &PaginationMetadata {
+                    total_count: total_items,
+                    page_request: Some(PageRequest {
+                        first: Some(5),
+                        after: None,
+                    }),
+                },
+                &data,
+            );
+            assert!(!pi1.has_prev_page);
+            assert!(!pi1.has_next_page);
+            assert_eq!(
+                pi1.start_cursor,
+                None
+            );
+            assert_eq!(
+                pi1.end_cursor,
+                None
             );
         }
     }

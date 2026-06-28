@@ -37,7 +37,7 @@ struct User {
 use juniper_relay_helpers::{OffsetCursor};
 
 // Build a cursor that represents a SQL-like offset + limit:
-let offset_cursor = OffsetCursor::new(100, Some(10));
+let offset_cursor = OffsetCursor::new(100);
 
 // Build a cursor that's just a raw string from something like Dynamo or an external system:
 let string_cursor = StringCursor::new("some-string-cursor");

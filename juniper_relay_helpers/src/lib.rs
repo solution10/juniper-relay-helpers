@@ -15,15 +15,22 @@
 //!
 //! ```rust
 //! use juniper::GraphQLObject;
-//! # use juniper_relay_helpers_codegen::{RelayConnection};
+//! use juniper_relay_helpers::{RelayConnection};
 //! # use juniper_relay_helpers::PageInfo;
 //!
 //! #[derive(Debug, GraphQLObject, RelayConnection, Clone, Eq, PartialEq)]
-//! struct PlayableCharacter {
+//! pub struct PlayableCharacter {
 //!     pub name: String,
 //!     pub theme_song: String,
 //! }
-//!
+//!```
+//! ```rust
+//! # use juniper::GraphQLObject;
+//! # use juniper_relay_helpers::PageInfo;
+//! # #[derive(GraphQLObject)]
+//! # pub struct PlayableCharacter {
+//! #  pub name: String
+//! # }
 //! // Generated structs - written out here to show the full code::
 //! #[derive(GraphQLObject)]
 //! struct PlayableCharacterRelayConnection {
@@ -136,7 +143,7 @@
 //! use juniper_relay_helpers::{PageRequest, StringCursor};
 //! #
 //! # fn page_request() {
-//! let page_request = PageRequest::new(Some(10), Some(StringCursor::new("my-cursor")));
+//! let page_request = PageRequest::new(Some(10), Some(StringCursor::new("my-cursor".to_string())));
 //! # }
 //! ```
 //!
@@ -155,7 +162,7 @@
 //! # use juniper_relay_helpers::{cursor_from_encoded_string, Cursor, OffsetCursor};
 //! #
 //! # fn cursors() {
-//! let cursor = OffsetCursor { offset: 1, first: 10 };
+//! let cursor = OffsetCursor::new(1);
 //!
 //! // Encode the cursor into a string of format "offset:1:10"
 //! let cursor_string = cursor.to_raw_string();
@@ -203,7 +210,7 @@
 //! use std::str::FromStr;
 //! use juniper_relay_helpers::{RelayIdentifier};
 //! #
-//! use graphql_relay_helpers_codegen::IdentifierTypeDiscriminator;
+//! use juniper_relay_helpers_codegen::IdentifierTypeDiscriminator;
 //!
 //! # fn identifiers() {
 //! #[derive(IdentifierTypeDiscriminator)]
