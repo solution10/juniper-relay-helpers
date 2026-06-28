@@ -40,7 +40,7 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
             let struct_name = input.ident;
 
             quote! {
-                #[derive(juniper::GraphQLObject, Debug, Clone, Eq, PartialEq)]
+                #[derive(juniper::GraphQLObject, Clone)]
                 #[graphql(
                     name = #connection_gql_name,
                     description = #connection_gql_desc
@@ -80,7 +80,7 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                     }
                 }
 
-                #[derive(juniper::GraphQLObject, Debug, Clone, Eq, PartialEq)]
+                #[derive(juniper::GraphQLObject, Clone)]
                 #[graphql(
                     name = #edge_gql_name,
                     description = #edge_gql_desc
