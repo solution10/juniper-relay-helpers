@@ -262,7 +262,7 @@
 //! }
 //! impl juniper::Context for MyContext {}
 //!
-//! #[derive(GraphQLObject, RelayConnection, Clone, Debug, Eq, PartialEq)]
+//! #[derive(GraphQLObject, RelayConnection, Clone)]
 //! #[relay(context = MyContext)]
 //! pub struct Character {
 //!     pub name: String
@@ -270,7 +270,7 @@
 //!
 //! // The same works for if you're using the graphql_object macro:
 //!
-//! #[derive(RelayConnection, Clone, Debug, Eq, PartialEq)]
+//! #[derive(RelayConnection, Clone)]
 //! #[relay(context = MyContext)]
 //! pub struct Music {
 //!    pub name: String,
