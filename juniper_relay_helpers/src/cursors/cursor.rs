@@ -80,7 +80,7 @@ pub trait Cursor {
 /// For instance, to parse out an Offset cursor:
 ///
 /// ```rust
-/// use graphql_relay_helpers::{cursor_from_encoded_string, OffsetCursor};
+/// use juniper_relay_helpers::{cursor_from_encoded_string, OffsetCursor};
 ///
 /// let decoded_cursor = cursor_from_encoded_string::<OffsetCursor>("b2Zmc2V0OjE6MTA=");
 /// ```

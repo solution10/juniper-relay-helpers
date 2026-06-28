@@ -38,3 +38,6 @@ jobs:
 
       - name: Integration Tests
         run: make test-integration
+
+      - name: Docs tests
+        run: make test-docs

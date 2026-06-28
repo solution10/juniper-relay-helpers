@@ -17,5 +17,9 @@ test-unit:
 test-integration:
 	cargo test --bin juniper_relay_helpers_test --profile test
 
+# Run all the docs tests:
+test-docs:
+	cargo test --doc
+
 # Run all of the tests together
-test: test-unit test-integration
+test: test-unit test-integration test-docs
