@@ -1,5 +1,5 @@
-use crate::{Cursor, RelayEdge};
 use crate::cursor_provider::CursorProvider;
+use crate::{Cursor, RelayEdge};
 
 /// Common trait for Relay connections. Will be implemented by the codegen.
 pub trait RelayConnection {
@@ -26,7 +26,7 @@ pub trait RelayConnection {
 
 #[cfg(test)]
 mod tests {
-    use crate::{OffsetCursor};
+    use crate::OffsetCursor;
     use juniper::GraphQLObject;
     use juniper_relay_helpers_codegen::RelayConnection;
 

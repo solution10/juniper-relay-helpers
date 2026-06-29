@@ -8,16 +8,26 @@ use syn::{Data, DeriveInput, parse_macro_input};
 pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    let relay_attrs: Option<syn::punctuated::Punctuated<syn::MetaNameValue, syn::Token![,]>> = input.attrs.iter()
-        .find(|a| a.path().is_ident("relay"))
-        .and_then(|a| a.parse_args_with(
+    let relay_attrs: Option<syn::punctuated::Punctuated<syn::MetaNameValue, syn::Token![,]>> =
+        input
+            .attrs
+            .iter()
+            .find(|a| a.path().is_ident("relay"))
+            .and_then(|a| {
+                a.parse_args_with(
             syn::punctuated::Punctuated::<syn::MetaNameValue, syn::Token![,]>::parse_terminated
-        ).ok());
+        ).ok()
+            });
 
-    let context_attr = relay_attrs.as_ref()
+    let context_attr = relay_attrs
+        .as_ref()
         .and_then(|attrs| attrs.iter().find(|mnv| mnv.path.is_ident("context")))
         .and_then(|mnv| {
-            if let syn::Expr::Path(p) = &mnv.value { Some(p.path.clone()) } else { None }
+            if let syn::Expr::Path(p) = &mnv.value {
+                Some(p.path.clone())
+            } else {
+                None
+            }
         });
 
     let context_clause = if let Some(ref ctx_path) = context_attr {
@@ -29,7 +39,11 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
     let cursor_attr = relay_attrs
         .and_then(|attrs| attrs.into_iter().find(|mnv| mnv.path.is_ident("cursor")))
         .and_then(|mnv| {
-            if let syn::Expr::Path(p) = mnv.value { Some(p.path) } else { None }
+            if let syn::Expr::Path(p) = mnv.value {
+                Some(p.path)
+            } else {
+                None
+            }
         });
 
     let cursor_type = if let Some(cursor_path) = &cursor_attr {
@@ -57,7 +71,10 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
 
             let page_info_gql_name = format!("{}ConnectionPageInfo", input.ident);
             let page_info_gql_desc = format!("PageInfo type for {}.", input.ident);
-            let page_info_name = Ident::new(&format!("{}RelayConnectionPageInfo", input.ident), Span::mixed_site());
+            let page_info_name = Ident::new(
+                &format!("{}RelayConnectionPageInfo", input.ident),
+                Span::mixed_site(),
+            );
 
             let struct_name = input.ident;
 

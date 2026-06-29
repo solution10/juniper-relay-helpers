@@ -23,3 +23,11 @@ test-docs:
 
 # Run all of the tests together
 test: test-unit test-integration test-docs
+
+# Format the codebase
+fmt:
+	cargo fmt
+
+# Check the formatting
+fmt-check:
+	cargo fmt --check

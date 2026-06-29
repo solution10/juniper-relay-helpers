@@ -1,6 +1,6 @@
+use crate::pagination_metadata::PaginationMetadata;
 use crate::{PageInfoFactory, StringCursor};
 use juniper_relay_helpers::{Cursor, OffsetCursor};
-use crate::pagination_metadata::PaginationMetadata;
 
 /// Trait to implement when building a Relay cursor provider.
 ///
@@ -23,7 +23,11 @@ pub trait CursorProvider<ItemT> {
     ) -> Self::CursorType;
 
     /// Builds the `PageInfo` to return to the RelayConnection
-    fn get_page_info<PageInfoType>(&self, metadata: &PaginationMetadata<Self::CursorType>, items: &[ItemT]) -> PageInfoType
+    fn get_page_info<PageInfoType>(
+        &self,
+        metadata: &PaginationMetadata<Self::CursorType>,
+        items: &[ItemT],
+    ) -> PageInfoType
     where
         PageInfoType: PageInfoFactory<Self::CursorType>;
 }
@@ -61,12 +65,18 @@ impl<ItemT> CursorProvider<ItemT> for OffsetCursorProvider {
         OffsetCursor::new(current_cursor.offset + offset_adjust + item_idx)
     }
 
-    fn get_page_info<PageInfoType>(&self, metadata: &PaginationMetadata<OffsetCursor>, items: &[ItemT]) -> PageInfoType
+    fn get_page_info<PageInfoType>(
+        &self,
+        metadata: &PaginationMetadata<OffsetCursor>,
+        items: &[ItemT],
+    ) -> PageInfoType
     where
-        PageInfoType: PageInfoFactory<OffsetCursor>
+        PageInfoType: PageInfoFactory<OffsetCursor>,
     {
         let default_cursor = OffsetCursor::default();
-        let current_cursor = metadata.clone().page_request
+        let current_cursor = metadata
+            .clone()
+            .page_request
             .and_then(|pr| pr.current_cursor())
             .unwrap_or(default_cursor);
 
@@ -86,20 +96,16 @@ impl<ItemT> CursorProvider<ItemT> for OffsetCursorProvider {
             current_cursor.offset > 0,
             has_next_page,
             if !items.is_empty() {
-                Some(
-                    self.get_cursor_for_item(metadata, 0, &items[0]),
-                )
+                Some(self.get_cursor_for_item(metadata, 0, &items[0]))
             } else {
                 None
             },
             if !items.is_empty() {
                 let last_index = items.len() - 1;
-                Some(
-                    self.get_cursor_for_item(metadata, last_index as i32, &items[last_index]),
-                )
+                Some(self.get_cursor_for_item(metadata, last_index as i32, &items[last_index]))
             } else {
                 None
-            }
+            },
         )
     }
 }
@@ -150,23 +156,24 @@ where
         StringCursor::new(item.cursor_key())
     }
 
-    fn get_page_info<PageInfoType>(&self, metadata: &PaginationMetadata<StringCursor>, items: &[ItemT]) -> PageInfoType
+    fn get_page_info<PageInfoType>(
+        &self,
+        metadata: &PaginationMetadata<StringCursor>,
+        items: &[ItemT],
+    ) -> PageInfoType
     where
-        PageInfoType: PageInfoFactory<StringCursor>
+        PageInfoType: PageInfoFactory<StringCursor>,
     {
         let mut first_item_cursor: Option<StringCursor> = None;
         let mut last_item_cursor: Option<StringCursor> = None;
 
         if let Some(first_item) = items.first() {
-            first_item_cursor = Some(
-                self.get_cursor_for_item(metadata, 0, first_item),
-            );
+            first_item_cursor = Some(self.get_cursor_for_item(metadata, 0, first_item));
         }
 
         if let Some(last_item) = items.last() {
-            last_item_cursor = Some(
-                self.get_cursor_for_item(metadata, items.len() as i32 - 1, last_item),
-            );
+            last_item_cursor =
+                Some(self.get_cursor_for_item(metadata, items.len() as i32 - 1, last_item));
         }
 
         let mut has_previous_page = false;
@@ -176,19 +183,23 @@ where
             has_previous_page = true;
         }
 
-        PageInfoType::new(has_previous_page, !items.is_empty(), first_item_cursor, last_item_cursor)
+        PageInfoType::new(
+            has_previous_page,
+            !items.is_empty(),
+            first_item_cursor,
+            last_item_cursor,
+        )
     }
 }
 
 #[cfg(test)]
 mod tests {
     mod offset_cursor_provider {
-        use juniper_relay_helpers_codegen::RelayConnection;
         use crate::{
-            CursorProvider, OffsetCursor, OffsetCursorProvider, PageRequest,
-            PaginationMetadata,
+            CursorProvider, OffsetCursor, OffsetCursorProvider, PageRequest, PaginationMetadata,
         };
-        use juniper::{ GraphQLObject };
+        use juniper::GraphQLObject;
+        use juniper_relay_helpers_codegen::RelayConnection;
 
         #[derive(Debug, Clone, GraphQLObject, RelayConnection)]
         #[relay(cursor = OffsetCursor)]
@@ -222,18 +233,8 @@ mod tests {
 
             assert!(!pi.has_prev_page);
             assert!(!pi.has_next_page);
-            assert_eq!(
-                pi.start_cursor,
-                Some(
-                    OffsetCursor::new(0)
-                )
-            );
-            assert_eq!(
-                pi.end_cursor,
-                Some(
-                    OffsetCursor::new(1)
-                )
-            );
+            assert_eq!(pi.start_cursor, Some(OffsetCursor::new(0)));
+            assert_eq!(pi.end_cursor, Some(OffsetCursor::new(1)));
         }
 
         /// Verifies what happens when there's a mismatch between the total count and the number of items
@@ -252,18 +253,8 @@ mod tests {
 
             assert!(!pi.has_prev_page);
             assert!(!pi.has_next_page);
-            assert_eq!(
-                pi.start_cursor,
-                Some(
-                    OffsetCursor::new(0)
-                )
-            );
-            assert_eq!(
-                pi.end_cursor,
-                Some(
-                    OffsetCursor::new(1)
-                )
-            );
+            assert_eq!(pi.start_cursor, Some(OffsetCursor::new(0)));
+            assert_eq!(pi.end_cursor, Some(OffsetCursor::new(1)));
         }
 
         /// Mimics a first page request - there's no `after` but there is a provided `first`
@@ -284,18 +275,8 @@ mod tests {
 
             assert!(!pi.has_prev_page);
             assert!(pi.has_next_page);
-            assert_eq!(
-                pi.start_cursor,
-                Some(
-                    OffsetCursor::new(0)
-                )
-            );
-            assert_eq!(
-                pi.end_cursor,
-                Some(
-                    OffsetCursor::new(1)
-                )
-            );
+            assert_eq!(pi.start_cursor, Some(OffsetCursor::new(0)));
+            assert_eq!(pi.end_cursor, Some(OffsetCursor::new(1)));
         }
 
         /// Test mimics pagination through a full set of results
@@ -334,18 +315,8 @@ mod tests {
             );
             assert!(!pi1.has_prev_page);
             assert!(pi1.has_next_page);
-            assert_eq!(
-                pi1.start_cursor,
-                Some(
-                    OffsetCursor::new(0)
-                )
-            );
-            assert_eq!(
-                pi1.end_cursor,
-                Some(
-                    OffsetCursor::new(4)
-                )
-            );
+            assert_eq!(pi1.start_cursor, Some(OffsetCursor::new(0)));
+            assert_eq!(pi1.end_cursor, Some(OffsetCursor::new(4)));
 
             let pi2 = p.get_page_info::<LocationRelayConnectionPageInfo>(
                 &PaginationMetadata {
@@ -360,18 +331,8 @@ mod tests {
             );
             assert!(pi2.has_prev_page);
             assert!(pi2.has_next_page);
-            assert_eq!(
-                pi2.start_cursor,
-                Some(
-                    OffsetCursor::new(5)
-                )
-            );
-            assert_eq!(
-                pi2.end_cursor,
-                Some(
-                    OffsetCursor::new(9)
-                )
-            );
+            assert_eq!(pi2.start_cursor, Some(OffsetCursor::new(5)));
+            assert_eq!(pi2.end_cursor, Some(OffsetCursor::new(9)));
 
             let pi3 = p.get_page_info::<LocationRelayConnectionPageInfo>(
                 &PaginationMetadata {
@@ -386,18 +347,8 @@ mod tests {
             );
             assert!(pi3.has_prev_page);
             assert!(!pi3.has_next_page);
-            assert_eq!(
-                pi3.start_cursor,
-                Some(
-                    OffsetCursor::new(10)
-                )
-            );
-            assert_eq!(
-                pi3.end_cursor,
-                Some(
-                    OffsetCursor::new(12)
-                )
-            );
+            assert_eq!(pi3.start_cursor, Some(OffsetCursor::new(10)));
+            assert_eq!(pi3.end_cursor, Some(OffsetCursor::new(12)));
         }
 
         #[test]
@@ -419,14 +370,8 @@ mod tests {
             );
             assert!(!pi1.has_prev_page);
             assert!(!pi1.has_next_page);
-            assert_eq!(
-                pi1.start_cursor,
-                None
-            );
-            assert_eq!(
-                pi1.end_cursor,
-                None
-            );
+            assert_eq!(pi1.start_cursor, None);
+            assert_eq!(pi1.end_cursor, None);
         }
     }
 
@@ -468,7 +413,7 @@ mod tests {
                 page_request: Some(PageRequest::new(
                     Some(10),
                     Some(StringCursor::new("".to_string())),
-                    None
+                    None,
                 )),
             };
 
@@ -509,8 +454,14 @@ mod tests {
             let page_info = p.get_page_info::<NoSQLItemRelayConnectionPageInfo>(&meta, &items);
             assert!(!page_info.has_prev_page);
             assert!(page_info.has_next_page); // assume next is true due to items being returned.
-            assert_eq!(page_info.start_cursor, Some(StringCursor::new("id-1".to_string())));
-            assert_eq!(page_info.end_cursor, Some(StringCursor::new("id-3".to_string())));
+            assert_eq!(
+                page_info.start_cursor,
+                Some(StringCursor::new("id-1".to_string()))
+            );
+            assert_eq!(
+                page_info.end_cursor,
+                Some(StringCursor::new("id-3".to_string()))
+            );
         }
 
         #[test]
@@ -540,8 +491,14 @@ mod tests {
             let page_info = p.get_page_info::<NoSQLItemRelayConnectionPageInfo>(&meta, &items);
             assert!(!page_info.has_prev_page);
             assert!(page_info.has_next_page);
-            assert_eq!(page_info.start_cursor, Some(StringCursor::new("id-1".to_string())));
-            assert_eq!(page_info.end_cursor, Some(StringCursor::new("id-3".to_string())));
+            assert_eq!(
+                page_info.start_cursor,
+                Some(StringCursor::new("id-1".to_string()))
+            );
+            assert_eq!(
+                page_info.end_cursor,
+                Some(StringCursor::new("id-3".to_string()))
+            );
         }
 
         #[test]
@@ -552,7 +509,7 @@ mod tests {
             let meta = PaginationMetadata {
                 total_count: Some(30), // More than the items returned, we have more items
                 page_request: Some(PageRequest {
-                    first: Some(10),                             // More than items returned
+                    first: Some(10), // More than items returned
                     after: Some(StringCursor::new("c3RyaW5nOmlkLTA=".to_string())), // id-0 - we're paginating.
                     before: None,
                 }),

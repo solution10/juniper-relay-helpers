@@ -1,8 +1,8 @@
-use juniper::graphql_object;
-use uuid::Uuid;
-use juniper_relay_helpers::{RelayConnection, OffsetCursor};
 use crate::context::Context;
 use crate::schema::Location;
+use juniper::graphql_object;
+use juniper_relay_helpers::{OffsetCursor, RelayConnection};
+use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct MusicRow {
@@ -21,7 +21,10 @@ pub struct MusicTrack {
 
 impl From<MusicRow> for MusicTrack {
     fn from(row: MusicRow) -> Self {
-        Self { id: row.id, title: row.title }
+        Self {
+            id: row.id,
+            title: row.title,
+        }
     }
 }
 
@@ -39,15 +42,19 @@ impl MusicTrack {
     // handle it differently.
     pub fn locations_heard(&self, ctx: &Context) -> Vec<Location> {
         let first_location = ctx.locations.first().unwrap();
-        vec![
-            Location::from(first_location.clone())
-        ]
+        vec![Location::from(first_location.clone())]
     }
 }
 
 pub fn get_music_test_data() -> Vec<MusicRow> {
     vec![
-        MusicRow { id: Uuid::new_v4(), title: "Une vie a t'aimer".to_string() },
-        MusicRow { id: Uuid::new_v4(), title: "Our drafts collide".to_string() }
+        MusicRow {
+            id: Uuid::new_v4(),
+            title: "Une vie a t'aimer".to_string(),
+        },
+        MusicRow {
+            id: Uuid::new_v4(),
+            title: "Our drafts collide".to_string(),
+        },
     ]
 }

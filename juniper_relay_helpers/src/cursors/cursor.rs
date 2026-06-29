@@ -1,6 +1,6 @@
+use crate::CursorError;
 use base64::prelude::*;
 use juniper::{FromInputValue, ParseScalarResult, ParseScalarValue, ScalarToken, ScalarValue};
-use crate::CursorError;
 
 pub const CURSOR_SEGMENT_DELIMITER: &str = "||";
 

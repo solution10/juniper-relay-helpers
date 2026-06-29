@@ -1,4 +1,5 @@
 pub use crate::context::Context;
+use crate::schema::character::CharacterRelayConnectionPageInfo;
 pub use crate::schema::character::{
     Character, CharacterRelayConnection, CharacterRelayEdge, CharacterRow,
 };
@@ -7,10 +8,9 @@ pub use crate::schema::location::{Location, LocationRelayConnection, LocationRow
 pub use crate::schema::music::{MusicRow, MusicTrack};
 use juniper::{EmptyMutation, EmptySubscription, FieldResult, RootNode};
 use juniper_relay_helpers::{
-    CursorProvider, KeyedCursorProvider, OffsetCursor,
-    PageRequest, PaginationMetadata, RelayConnection, RelayEdge, RelayIdentifier, StringCursor,
+    CursorProvider, KeyedCursorProvider, OffsetCursor, PageRequest, PaginationMetadata,
+    RelayConnection, RelayEdge, RelayIdentifier, StringCursor,
 };
-use crate::schema::character::CharacterRelayConnectionPageInfo;
 
 mod character;
 mod identifiers;
@@ -20,7 +20,6 @@ mod music;
 pub use crate::schema::character::get_character_test_data;
 pub use crate::schema::location::get_location_test_data;
 pub use crate::schema::music::get_music_test_data;
-
 
 // --------- QueryRoot ------------
 
@@ -77,8 +76,7 @@ impl QueryRoot {
         if let Some(after_cursor) = &pr.after {
             // Find the starting item:
             let idx = nodes.iter().position(|item| {
-                let sub_page =
-                    PageRequest::new(first, Some(after_cursor.clone()), None);
+                let sub_page = PageRequest::new(first, Some(after_cursor.clone()), None);
                 let pagination_metadata = PaginationMetadata {
                     total_count: Some(ctx.locations.len() as i32),
                     page_request: Some(sub_page),

@@ -1,5 +1,5 @@
 use juniper::GraphQLObject;
-use juniper_relay_helpers::{RelayConnection, RelayIdentifier, OffsetCursor};
+use juniper_relay_helpers::{OffsetCursor, RelayConnection, RelayIdentifier};
 use std::str::FromStr;
 use uuid::Uuid;
 
