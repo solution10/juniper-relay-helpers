@@ -17,7 +17,7 @@ pub trait RelayConnection {
     fn new(
         nodes: &[Self::NodeType],
         total_items: Option<i32>,
-        cursor_provider: impl CursorProvider<Self::NodeType>,
+        cursor_provider: impl CursorProvider<Self::NodeType, CursorType = Self::CursorType>,
         page_request: Option<crate::PageRequest<Self::CursorType>>,
     ) -> Self;
 }

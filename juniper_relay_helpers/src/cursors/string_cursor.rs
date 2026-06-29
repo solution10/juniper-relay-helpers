@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
-use juniper::GraphQLScalar;
-use crate::{Cursor, CursorError, CURSOR_SEGMENT_DELIMITER};
+use juniper::{GraphQLScalar, ScalarValue};
+use crate::{Cursor, CursorBase, CursorError, CURSOR_SEGMENT_DELIMITER};
 
 /// Built-in cursor type for when the cursor is just a string. Usually useful for things like
 /// NoSQL systems that return something opaque to you.
@@ -16,7 +16,7 @@ impl StringCursor {
     }
 }
 
-impl Cursor for StringCursor {
+impl CursorBase for StringCursor {
     type CursorType = StringCursor;
 
     fn to_raw_string(&self) -> String {
@@ -30,6 +30,8 @@ impl Cursor for StringCursor {
         })
     }
 }
+
+impl<S: ScalarValue + Send + Sync> Cursor<S> for StringCursor {}
 impl Display for StringCursor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.to_raw_string())
@@ -46,7 +48,7 @@ impl Default for StringCursor {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Cursor, StringCursor};
+    use crate::{CursorBase, StringCursor};
 
     #[test]
     fn test_string_cursor_raw_string() {

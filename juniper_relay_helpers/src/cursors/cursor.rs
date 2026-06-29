@@ -1,20 +1,19 @@
 use base64::prelude::*;
-use juniper::{FromInputValue, ParseScalarResult, ParseScalarValue, ScalarToken, ScalarValue};
+use juniper::{
+    DefaultScalarValue, FromInputValue, GraphQLType, GraphQLValue, GraphQLValueAsync,
+    ParseScalarResult, ParseScalarValue, ScalarToken, ScalarValue,
+    macros::reflect::{BaseSubTypes, BaseType, WrappedType},
+    marker::IsOutputType,
+};
 use crate::CursorError;
 
 pub const CURSOR_SEGMENT_DELIMITER: &str = "||";
 
-/// Cursor struct that builds into an opaque string.
-/// Cursors are present both in the edges and in the PageInfo within the Connection.
+/// Non-generic cursor interface: serialization, deserialization, and the scalar helper methods
+/// used to wire a cursor type into `#[derive(GraphQLScalar)]`.
 ///
-/// You can implement this trait for your own cursor type if it's not covered by this library.
-/// You can also use the built-in Cursors:
-///     - OffsetCursor
-///     - StringCursor
-///
-/// This trait implements the common methods needed to be considered a `GraphQlScalar`
-/// which means you can add the following to your struct and it will work
-/// out of the box:
+/// Implement this trait on your cursor struct, then add an empty `impl<S: ScalarValue + Send + Sync> Cursor<S> for MyCursor {}`
+/// to make it usable as a typed cursor in connections.
 ///
 /// ```nocompile
 /// #[derive(Debug, GraphQLScalar)]
@@ -24,17 +23,18 @@ pub const CURSOR_SEGMENT_DELIMITER: &str = "||";
 ///     from_input_with = Self::from_input
 /// )]
 /// struct MyCursor {}
-/// impl Cursor for MyCursor { ... }
+/// impl CursorBase for MyCursor { ... }
+/// impl<S: ScalarValue + Send + Sync> Cursor<S> for MyCursor {}
 /// ```
 ///
-pub trait Cursor: Clone + FromInputValue {
+pub trait CursorBase: Clone + Sized {
     /// Concrete type of the returned cursor. Usually the thing that implements the trait.
-    type CursorType: Cursor;
+    type CursorType: CursorBase;
 
     /// Serialize the cursor into a string ready to be base64 encoded.
     fn to_raw_string(&self) -> String;
 
-    /// Constructor that given the raw string, and a vector of parts (the colon separated segments)
+    /// Constructor that given the raw string, and a vector of parts (the delimiter-separated segments)
     /// will return a Result of the CursorType. Return a CursorError if the decoding fails.
     fn new(raw: &str, parts: Vec<&str>) -> Result<Self::CursorType, CursorError>;
 
@@ -55,7 +55,7 @@ pub trait Cursor: Clone + FromInputValue {
         BASE64_URL_SAFE.encode(self.to_raw_string().as_bytes())
     }
 
-    // ------------- GraphQLScalar implementations --------------
+    // ------------- GraphQLScalar helper implementations --------------
 
     fn to_output(&self) -> String {
         self.to_encoded_string()
@@ -74,6 +74,31 @@ pub trait Cursor: Clone + FromInputValue {
     }
 }
 
+/// Marker trait that combines [`CursorBase`] with all Juniper GraphQL scalar output traits
+/// for a given scalar value type `S`.
+///
+/// Implement this as an empty impl on any cursor type that implements both `CursorBase` and
+/// `#[derive(GraphQLScalar)]`:
+///
+/// ```nocompile
+/// impl<S: ScalarValue + Send + Sync> Cursor<S> for MyCursor {}
+/// ```
+///
+pub trait Cursor<S: ScalarValue + Send + Sync = DefaultScalarValue>:
+    CursorBase
+    + Send
+    + Sync
+    + FromInputValue<S>
+    + GraphQLValue<S, TypeInfo = (), Context = ()>
+    + GraphQLType<S>
+    + IsOutputType<S>
+    + GraphQLValueAsync<S>
+    + BaseType<S>
+    + BaseSubTypes<S>
+    + WrappedType<S>
+{
+}
+
 /// Decodes a cursor from a base64 encoded string into the correct concrete instance type.
 /// Use the Turbofish `::<>()` syntax to tell the method what that correct type is.
 ///
@@ -89,8 +114,7 @@ pub trait Cursor: Clone + FromInputValue {
 ///
 pub fn cursor_from_encoded_string<T>(input: &str) -> Result<T, CursorError>
 where
-    T: Cursor<CursorType = T>,
+    T: CursorBase<CursorType = T>,
 {
-    let cursor = T::from_encoded_string(input)?;
-    Ok(cursor)
+    T::from_encoded_string(input)
 }

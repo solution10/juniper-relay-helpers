@@ -7,8 +7,8 @@ pub use crate::schema::location::{Location, LocationRelayConnection, LocationRow
 pub use crate::schema::music::{MusicRow, MusicTrack};
 use juniper::{EmptyMutation, EmptySubscription, FieldResult, RootNode};
 use juniper_relay_helpers::{
-    Cursor, CursorProvider, KeyedCursorProvider, OffsetCursor, OffsetCursorProvider, PageInfo,
-    PageRequest, PaginationMetadata, RelayConnection, RelayEdge, RelayIdentifier, StringCursor,
+    OffsetCursor, OffsetCursorProvider, PageInfo,
+    PageRequest, RelayConnection, RelayEdge, RelayIdentifier,
 };
 
 mod character;
@@ -25,7 +25,7 @@ pub use crate::schema::music::get_music_test_data;
 
 pub struct QueryRoot;
 
-#[juniper::graphql_object(context = Context)]
+#[juniper::graphql_object(context = Context, scalar = S: juniper::ScalarValue + Send + Sync)]
 impl QueryRoot {
     /// Queries for all characters in the "database"
     /// This method shows how you can manually build up the resulting structs without using
@@ -82,44 +82,26 @@ impl QueryRoot {
             &nodes,
             Some(ctx.locations.len() as i32),
             OffsetCursorProvider::new(),
-            Some(PageRequest::new(first, after)),
+            Some(PageRequest::new(first, after, None)),
         ))
     }
 
-    /// Queries for all locations in the "database"
-    /// This method makes use of the String cursor provider to show how you can use that one too!
-    async fn locations_string_cursor(
+    /// Queries for all locations using an offset cursor from a numeric page arg.
+    async fn locations_paged(
         first: Option<i32>,
-        after: Option<StringCursor>,
+        page: Option<i32>,
         ctx: &Context,
     ) -> FieldResult<LocationRelayConnection> {
+        let after = page.map(OffsetCursor::new);
         let mut nodes = ctx
             .locations
             .iter()
             .map(|row| Location::from(row.clone()))
             .collect::<Vec<Location>>();
 
-        let cp = KeyedCursorProvider;
-        let pr = PageRequest::new(first, after);
-
-        if let Some(after_cursor) = &pr.after {
-            // Find the starting item:
-            let idx = nodes.iter().position(|item| {
-                let sub_page =
-                    PageRequest::new(first, Some(StringCursor::new(after_cursor.clone())));
-                let pagination_metadata = PaginationMetadata {
-                    total_count: Some(ctx.locations.len() as i32),
-                    page_request: Some(sub_page),
-                };
-                let item_cursor = cp.get_cursor_for_item(&pagination_metadata, 0, item);
-                item_cursor.to_encoded_string().eq(after_cursor)
-            });
-
-            if let Some(idx) = idx {
-                nodes = nodes.split_off(idx + 1);
-            }
+        if let Some(ref c) = after {
+            nodes = nodes.split_off(c.offset as usize + 1);
         }
-
         if let Some(first) = first {
             nodes.truncate(first as usize);
         }
@@ -127,8 +109,8 @@ impl QueryRoot {
         Ok(LocationRelayConnection::new(
             &nodes,
             Some(ctx.locations.len() as i32),
-            KeyedCursorProvider,
-            Some(pr),
+            OffsetCursorProvider::new(),
+            Some(PageRequest::new(first, after, None)),
         ))
     }
 
