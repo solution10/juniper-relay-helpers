@@ -1,6 +1,6 @@
 use juniper::graphql_object;
 use uuid::Uuid;
-use juniper_relay_helpers::RelayConnection;
+use juniper_relay_helpers::{RelayConnection, OffsetCursor};
 use crate::context::Context;
 use crate::schema::Location;
 
@@ -13,7 +13,7 @@ pub struct MusicRow {
 /// This is an example of a "complex" field resolver type, where there is a dedicated impl
 /// block for the field resolver, which also contains a context parameter.
 #[derive(Clone, Debug, RelayConnection, Eq, PartialEq)]
-#[relay(context = Context)]
+#[relay(context = Context, cursor = OffsetCursor)]
 pub struct MusicTrack {
     pub id: Uuid,
     pub title: String,

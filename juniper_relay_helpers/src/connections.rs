@@ -14,17 +14,19 @@ pub trait RelayConnection {
 
     /// Builds a connection and associated edges from a Vec of the Nodes themselves. Pagination cursors
     /// can also be generated for you by providing the page info and CursorProvider trait instance.
-    fn new(
+    fn new<ProviderT>(
         nodes: &[Self::NodeType],
         total_items: Option<i32>,
-        cursor_provider: impl CursorProvider<Self::NodeType>,
+        cursor_provider: ProviderT,
         page_request: Option<crate::PageRequest<Self::CursorType>>,
-    ) -> Self;
+    ) -> Self
+    where
+        ProviderT: CursorProvider<Self::NodeType, CursorType = Self::CursorType>;
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{OffsetCursor, PageInfo};
+    use crate::{OffsetCursor};
     use juniper::GraphQLObject;
     use juniper_relay_helpers_codegen::RelayConnection;
 
@@ -39,7 +41,7 @@ mod tests {
         let conn = UserRelayConnection {
             count: Some(12),
             edges: vec![],
-            page_info: PageInfo {
+            page_info: UserRelayConnectionPageInfo {
                 start_cursor: None,
                 end_cursor: None,
                 has_prev_page: false,

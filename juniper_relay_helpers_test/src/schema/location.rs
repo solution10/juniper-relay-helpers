@@ -1,5 +1,5 @@
 use juniper::GraphQLObject;
-use juniper_relay_helpers::{CursorByKey, RelayConnection, RelayIdentifier};
+use juniper_relay_helpers::{CursorByKey, RelayConnection, RelayIdentifier, StringCursor};
 
 use crate::schema::identifiers::EntityType;
 
@@ -12,6 +12,7 @@ pub struct LocationRow {
 
 /// GraphQL type for a character.
 #[derive(GraphQLObject, RelayConnection, Debug, Eq, PartialEq, Clone)]
+#[relay(cursor = StringCursor)]
 pub struct Location {
     pub id: RelayIdentifier<String, EntityType>,
     pub name: String,

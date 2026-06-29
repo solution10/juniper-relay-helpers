@@ -1,34 +1,4 @@
 use crate::{Cursor};
-use juniper::{GraphQLObject};
-
-/// Represents the Relay spec pagination object
-/// <https://relay.dev/docs/guides/graphql-server-specification/>
-///
-#[derive(Debug, GraphQLObject, Eq, PartialEq, Clone)]
-#[graphql(description = "Pagination information")]
-pub struct PageInfo<CursorType> where CursorType: Cursor {
-    /// Indicates whether there is a page following this current one
-    #[graphql(description = "Indicates whether there is a page following this current one")]
-    pub has_next_page: bool,
-
-    /// Indicates whether there is a page preceding this one
-    #[graphql(description = "Indicates whether there is a page preceding this one")]
-    pub has_prev_page: bool,
-
-    /// An opaque cursor that when passed to after: in a query will return the previous page of
-    /// results.
-    #[graphql(
-        description = "An opaque cursor that when passed to after: in a query will return the previous page of results."
-    )]
-    pub start_cursor: Option<CursorType>,
-
-    /// An opaque cursor that when passed to after: in a query will return the following page of
-    /// results.
-    #[graphql(
-        description = "An opaque cursor that when passed to after: in a query will return the following page of results."
-    )]
-    pub end_cursor: Option<CursorType>,
-}
 
 /// Represents a common Relay pagination request pattern. You'd usually build this from the arguments
 /// into the query resolver, and can then pass that into service calls etc.

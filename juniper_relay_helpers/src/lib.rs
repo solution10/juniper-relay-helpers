@@ -16,7 +16,6 @@
 //! ```rust
 //! use juniper::GraphQLObject;
 //! use juniper_relay_helpers::{RelayConnection};
-//! # use juniper_relay_helpers::PageInfo;
 //!
 //! #[derive(Debug, GraphQLObject, RelayConnection, Clone, Eq, PartialEq)]
 //! pub struct PlayableCharacter {
@@ -26,7 +25,7 @@
 //!```
 //! ```rust
 //! # use juniper::GraphQLObject;
-//! # use juniper_relay_helpers::PageInfo;
+//! # use juniper_relay_helpers::{StringCursor};
 //! # #[derive(GraphQLObject)]
 //! # pub struct PlayableCharacter {
 //! #  pub name: String
@@ -36,13 +35,21 @@
 //! struct PlayableCharacterRelayConnection {
 //!     count: i32,
 //!     edges: Vec<PlayableCharacterRelayEdge>,
-//!     page_info: PageInfo
+//!     page_info: PlayableCharacterRelayConnectionPageInfo
 //! }
 //!
 //! #[derive(GraphQLObject)]
 //! struct PlayableCharacterRelayEdge {
 //!     cursor: String,
 //!     node: PlayableCharacter,
+//! }
+//!
+//! #[derive(GraphQLObject)]
+//! struct PlayableCharacterRelayConnectionPageInfo {
+//!     pub has_next_page: bool,
+//!     pub has_prev_page: bool,
+//!     pub start_cursor: Option<StringCursor>,
+//!     pub end_cursor: Option<StringCursor>,
 //! }
 //!
 //! ```
@@ -136,14 +143,14 @@
 //!
 //! ## Page Request
 //!
-//! Pagination requests in Relay usually are specified by a ``first`` and ``after`` argument.
+//! Pagination requests in Relay usually are specified by a ``first``, ``after`` and ``before`` arguments.
 //! This library provides a `PageRequest` struct to help with this.
 //!
 //! ```
 //! use juniper_relay_helpers::{PageRequest, StringCursor};
 //! #
 //! # fn page_request() {
-//! let page_request = PageRequest::new(Some(10), Some(StringCursor::new("my-cursor".to_string())));
+//! let page_request = PageRequest::new(Some(10), Some(StringCursor::new("my-cursor".to_string())), None);
 //! # }
 //! ```
 //!
@@ -155,8 +162,8 @@
 //! Relay requires edges and pagination info to contain opaque strings called "cursors".
 //! This library provides a few built-in cursors, but you can also implement your own.
 //!
-//! The most simple cursor is the OffsetCursor, which is just an offset and a limit, similar to
-//! SQL LIMIT and OFFSET.
+//! The most simple cursor is the OffsetCursor, which is just an offset, often used in
+//! SQL OFFSET.
 //!
 //! ```
 //! # use juniper_relay_helpers::{cursor_from_encoded_string, Cursor, OffsetCursor};
@@ -309,8 +316,9 @@ mod cursor_provider;
 mod cursors;
 mod edges;
 mod identifier;
-mod pagination;
+mod page_request;
 mod pagination_metadata;
+mod page_info_factory;
 
 // From other crates in the workspace:
 pub use juniper_relay_helpers_codegen::{IdentifierTypeDiscriminator, RelayConnection};
@@ -322,5 +330,6 @@ pub use cursor_provider::*;
 pub use cursors::*;
 pub use edges::*;
 pub use identifier::*;
-pub use pagination::*;
+pub use page_info_factory::*;
+pub use page_request::*;
 pub use pagination_metadata::*;

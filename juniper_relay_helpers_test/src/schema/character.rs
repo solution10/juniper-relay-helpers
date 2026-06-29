@@ -1,5 +1,5 @@
 use juniper::GraphQLObject;
-use juniper_relay_helpers::{RelayConnection, RelayIdentifier};
+use juniper_relay_helpers::{RelayConnection, RelayIdentifier, OffsetCursor};
 use std::str::FromStr;
 use uuid::Uuid;
 
@@ -14,6 +14,7 @@ pub struct CharacterRow {
 
 /// GraphQL type for a character.
 #[derive(GraphQLObject, RelayConnection, Debug, Eq, PartialEq, Clone)]
+#[relay(cursor = OffsetCursor)]
 pub struct Character {
     pub id: RelayIdentifier<Uuid, EntityType>,
     pub name: String,
