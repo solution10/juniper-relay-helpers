@@ -31,10 +31,10 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
             if let syn::Expr::Path(p) = &mnv.value { Some(p.path.clone()) } else { None }
         });
 
-    let cursor_type = if let Some(cursor_path) = &cursor_attr {
-        quote! { #cursor_path }
+    let cursor_type: Option<&Ident> = if let Some(cursor_path) = &cursor_attr {
+        cursor_path.get_ident()
     } else {
-        quote! { juniper_relay_helpers::StringCursor }
+        None
     };
 
     let out = match input.data {
@@ -54,37 +54,37 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                 Span::mixed_site(),
             );
 
+            let default_cursor_type = Ident::new("StringCursor", Span::mixed_site());
+            let connection_cursor_type = cursor_type.unwrap_or(&default_cursor_type);
+
             let struct_name = input.ident;
 
             quote! {
+                use juniper_relay_helpers::StringCursor;
+
                 #[derive(juniper::GraphQLObject, Clone)]
                 #[graphql(
                     name = #connection_gql_name,
-                    description = #connection_gql_desc,
-                    scalar = S: juniper::ScalarValue + Send + Sync
+                    description = #connection_gql_desc
                     #context_clause
                 )]
-                #[automatically_derived]
                 pub struct #connection_name {
                     pub count: Option<i32>,
                     pub edges: Vec<#edge_name>,
-                    pub page_info: juniper_relay_helpers::PageInfo<#cursor_type>,
+                    pub page_info: juniper_relay_helpers::PageInfo<#connection_cursor_type>,
                 }
 
-                #[automatically_derived]
                 use juniper_relay_helpers::RelayEdge as #edge_trait_name;
-
-                #[automatically_derived]
                 impl juniper_relay_helpers::RelayConnection for #connection_name {
                     type EdgeType = #edge_name;
                     type NodeType = #struct_name;
-                    type CursorType = #cursor_type;
+                    type CursorType = #connection_cursor_type;
 
                     fn new(
                         nodes: &[#struct_name],
                         total_items: Option<i32>,
-                        cursor_provider: impl juniper_relay_helpers::CursorProvider<Self::NodeType, CursorType = #cursor_type>,
-                        page_request: Option<juniper_relay_helpers::PageRequest<#cursor_type>>
+                        cursor_provider: impl juniper_relay_helpers::CursorProvider<Self::NodeType>,
+                        page_request: Option<juniper_relay_helpers::PageRequest>
                     ) -> Self {
                         let metadata = juniper_relay_helpers::PaginationMetadata {
                             total_count: total_items,
@@ -106,22 +106,19 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                 #[derive(juniper::GraphQLObject, Clone)]
                 #[graphql(
                     name = #edge_gql_name,
-                    description = #edge_gql_desc,
-                    scalar = S: juniper::ScalarValue + Send + Sync
+                    description = #edge_gql_desc
                     #context_clause
                 )]
-                #[automatically_derived]
                 pub struct #edge_name {
                     pub node: #struct_name,
-                    pub cursor: Option<#cursor_type>,
+                    pub cursor: Option<#connection_cursor_type>,
                 }
 
-                #[automatically_derived]
                 impl juniper_relay_helpers::RelayEdge for #edge_name {
                     type NodeType = #struct_name;
-                    type CursorType = #cursor_type;
+                    type CursorType = #connection_cursor_type;
 
-                    fn new(node: Self::NodeType, cursor: #cursor_type) -> Self {
+                    fn new(node: Self::NodeType, cursor: #connection_cursor_type) -> Self {
                         Self {
                             node: node,
                             cursor: Some(cursor),

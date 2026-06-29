@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
-use juniper::{GraphQLScalar, ScalarValue};
-use crate::{Cursor, CursorBase, CursorError, CURSOR_SEGMENT_DELIMITER};
+use juniper::GraphQLScalar;
+use crate::{Cursor, CursorError, CURSOR_SEGMENT_DELIMITER};
 
 /// A simple offset-based cursor.
 #[derive(Debug, GraphQLScalar, Default, Clone, Eq, PartialEq)]
@@ -57,7 +57,7 @@ impl OffsetCursor {
     }
 }
 
-impl CursorBase for OffsetCursor {
+impl Cursor for OffsetCursor {
     type CursorType = OffsetCursor;
 
     fn to_raw_string(&self) -> String {
@@ -73,8 +73,6 @@ impl CursorBase for OffsetCursor {
     }
 }
 
-impl<S: ScalarValue + Send + Sync> Cursor<S> for OffsetCursor {}
-
 impl Display for OffsetCursor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.to_raw_string())
@@ -83,7 +81,7 @@ impl Display for OffsetCursor {
 
 #[cfg(test)]
 mod tests {
-    use crate::cursors::{CursorBase, OffsetCursor};
+    use crate::cursors::{Cursor, OffsetCursor};
 
     #[test]
     fn test_new_offset_first() {

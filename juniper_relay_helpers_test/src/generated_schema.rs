@@ -20,7 +20,7 @@ mod integration_tests {
 
     struct QueryRoot;
 
-    #[juniper::graphql_object]
+    #[juniper::graphql_object()]
     impl QueryRoot {
         fn get_users() -> FieldResult<UserRelayConnection> {
             Ok(UserRelayConnection {

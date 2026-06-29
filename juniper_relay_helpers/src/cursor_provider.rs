@@ -468,13 +468,13 @@ mod tests {
             };
 
             let i1_cursor = p.get_cursor_for_item(&meta, 0, &items[0]);
-            assert_eq!(i1_cursor, StringCursor::new("c3RyaW5nfHxpZC0x".to_string()));
+            assert_eq!(i1_cursor.to_encoded_string(), "c3RyaW5nfHxpZC0x");
 
             let i2_cursor = p.get_cursor_for_item(&meta, 1, &items[1]);
-            assert_eq!(i2_cursor, StringCursor::new("c3RyaW5nfHxpZC0y".to_string()));
+            assert_eq!(i2_cursor.to_encoded_string(), "c3RyaW5nfHxpZC0y");
 
             let i3_cursor = p.get_cursor_for_item(&meta, 2, &items[2]);
-            assert_eq!(i3_cursor, StringCursor::new("c3RyaW5nfHxpZC0z".to_string()));
+            assert_eq!(i3_cursor.to_encoded_string(), "c3RyaW5nfHxpZC0z");
         }
 
         #[test]

@@ -1,19 +1,20 @@
 use base64::prelude::*;
-use juniper::{
-    DefaultScalarValue, FromInputValue, GraphQLType, GraphQLValue, GraphQLValueAsync,
-    ParseScalarResult, ParseScalarValue, ScalarToken, ScalarValue,
-    macros::reflect::{BaseSubTypes, BaseType, WrappedType},
-    marker::IsOutputType,
-};
+use juniper::{FromInputValue, ParseScalarResult, ParseScalarValue, ScalarToken, ScalarValue};
 use crate::CursorError;
 
 pub const CURSOR_SEGMENT_DELIMITER: &str = "||";
 
-/// Non-generic cursor interface: serialization, deserialization, and the scalar helper methods
-/// used to wire a cursor type into `#[derive(GraphQLScalar)]`.
+/// Cursor struct that builds into an opaque string.
+/// Cursors are present both in the edges and in the PageInfo within the Connection.
 ///
-/// Implement this trait on your cursor struct, then add an empty `impl<S: ScalarValue + Send + Sync> Cursor<S> for MyCursor {}`
-/// to make it usable as a typed cursor in connections.
+/// You can implement this trait for your own cursor type if it's not covered by this library.
+/// You can also use the built-in Cursors:
+///     - OffsetCursor
+///     - StringCursor
+///
+/// This trait implements the common methods needed to be considered a `GraphQlScalar`
+/// which means you can add the following to your struct and it will work
+/// out of the box:
 ///
 /// ```nocompile
 /// #[derive(Debug, GraphQLScalar)]
@@ -23,18 +24,17 @@ pub const CURSOR_SEGMENT_DELIMITER: &str = "||";
 ///     from_input_with = Self::from_input
 /// )]
 /// struct MyCursor {}
-/// impl CursorBase for MyCursor { ... }
-/// impl<S: ScalarValue + Send + Sync> Cursor<S> for MyCursor {}
+/// impl Cursor for MyCursor { ... }
 /// ```
 ///
-pub trait CursorBase: Clone + Sized {
+pub trait Cursor: Clone + FromInputValue {
     /// Concrete type of the returned cursor. Usually the thing that implements the trait.
-    type CursorType: CursorBase;
+    type CursorType: Cursor;
 
     /// Serialize the cursor into a string ready to be base64 encoded.
     fn to_raw_string(&self) -> String;
 
-    /// Constructor that given the raw string, and a vector of parts (the delimiter-separated segments)
+    /// Constructor that given the raw string, and a vector of parts (the colon separated segments)
     /// will return a Result of the CursorType. Return a CursorError if the decoding fails.
     fn new(raw: &str, parts: Vec<&str>) -> Result<Self::CursorType, CursorError>;
 
@@ -55,7 +55,7 @@ pub trait CursorBase: Clone + Sized {
         BASE64_URL_SAFE.encode(self.to_raw_string().as_bytes())
     }
 
-    // ------------- GraphQLScalar helper implementations --------------
+    // ------------- GraphQLScalar implementations --------------
 
     fn to_output(&self) -> String {
         self.to_encoded_string()
@@ -74,31 +74,6 @@ pub trait CursorBase: Clone + Sized {
     }
 }
 
-/// Marker trait that combines [`CursorBase`] with all Juniper GraphQL scalar output traits
-/// for a given scalar value type `S`.
-///
-/// Implement this as an empty impl on any cursor type that implements both `CursorBase` and
-/// `#[derive(GraphQLScalar)]`:
-///
-/// ```nocompile
-/// impl<S: ScalarValue + Send + Sync> Cursor<S> for MyCursor {}
-/// ```
-///
-pub trait Cursor<S: ScalarValue + Send + Sync = DefaultScalarValue>:
-    CursorBase
-    + Send
-    + Sync
-    + FromInputValue<S>
-    + GraphQLValue<S, TypeInfo = (), Context = ()>
-    + GraphQLType<S>
-    + IsOutputType<S>
-    + GraphQLValueAsync<S>
-    + BaseType<S>
-    + BaseSubTypes<S>
-    + WrappedType<S>
-{
-}
-
 /// Decodes a cursor from a base64 encoded string into the correct concrete instance type.
 /// Use the Turbofish `::<>()` syntax to tell the method what that correct type is.
 ///
@@ -114,7 +89,8 @@ pub trait Cursor<S: ScalarValue + Send + Sync = DefaultScalarValue>:
 ///
 pub fn cursor_from_encoded_string<T>(input: &str) -> Result<T, CursorError>
 where
-    T: CursorBase<CursorType = T>,
+    T: Cursor<CursorType = T>,
 {
-    T::from_encoded_string(input)
+    let cursor = T::from_encoded_string(input)?;
+    Ok(cursor)
 }
