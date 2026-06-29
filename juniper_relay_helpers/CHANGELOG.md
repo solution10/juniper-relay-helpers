@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.0](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers-v0.5.0...juniper_relay_helpers-v0.6.0) - 2026-06-29
+
+### Added
+
+- [**breaking**] strict typing of cursors in Connections and PageInfo ([#35](https://github.com/solution10/juniper-relay-helpers/pull/35))
+
+### Other
+
+- add Rustfmt with default settings + CI ([#37](https://github.com/solution10/juniper-relay-helpers/pull/37))
+
 ## [0.5.0](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers-v0.4.0...juniper_relay_helpers-v0.5.0) - 2026-06-29
 
 ### Added
