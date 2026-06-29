@@ -1,15 +1,6 @@
 use crate::StringCursor;
-use juniper_relay_helpers::{Cursor, OffsetCursor, PageInfo, PageRequest};
-
-/// Struct that holds metadata about the response that can be used in the CursorProvider
-#[derive(Debug, Clone)]
-pub struct PaginationMetadata {
-    /// The total number of items in the result set:
-    pub total_count: i32,
-
-    /// The current PageInfo, if any:
-    pub page_request: Option<PageRequest>,
-}
+use juniper_relay_helpers::{Cursor, OffsetCursor, PageInfo};
+use crate::pagination_metadata::PaginationMetadata;
 
 /// Trait to implement when building a Relay cursor provider.
 ///
@@ -80,7 +71,7 @@ impl<ItemT> CursorProvider<ItemT> for OffsetCursorProvider {
         let has_next_page = if let Some(pr) = &metadata.page_request {
             // Check if we requested up to or over the total items.
             if let Some(first) = pr.first {
-                current_cursor.offset + first < metadata.total_count
+                current_cursor.offset + first < metadata.total_count.unwrap_or(0)
             } else {
                 false
             }
@@ -223,7 +214,7 @@ mod tests {
             let p = OffsetCursorProvider::new();
             let pi = p.get_page_info(
                 &PaginationMetadata {
-                    total_count: 2,
+                    total_count: Some(2),
                     page_request: None,
                 },
                 &data(),
@@ -255,7 +246,7 @@ mod tests {
             let p = OffsetCursorProvider::new();
             let pi = p.get_page_info(
                 &PaginationMetadata {
-                    total_count: 27,
+                    total_count: Some(27),
                     page_request: None,
                 },
                 &data(),
@@ -285,7 +276,7 @@ mod tests {
             let p = OffsetCursorProvider::new();
             let pi = p.get_page_info(
                 &PaginationMetadata {
-                    total_count: 27,
+                    total_count: Some(27),
                     page_request: Some(PageRequest {
                         first: Some(10),
                         after: None,
@@ -337,7 +328,7 @@ mod tests {
 
             let pi1 = p.get_page_info(
                 &PaginationMetadata {
-                    total_count: total_items,
+                    total_count: Some(total_items),
                     page_request: Some(PageRequest {
                         first: Some(5),
                         after: None,
@@ -364,7 +355,7 @@ mod tests {
 
             let pi2 = p.get_page_info(
                 &PaginationMetadata {
-                    total_count: total_items,
+                    total_count: Some(total_items),
                     page_request: Some(PageRequest {
                         first: Some(5),
                         after: pi1.end_cursor.clone(),
@@ -391,7 +382,7 @@ mod tests {
 
             let pi3 = p.get_page_info(
                 &PaginationMetadata {
-                    total_count: total_items,
+                    total_count: Some(total_items),
                     page_request: Some(PageRequest {
                         first: Some(5),
                         after: pi2.end_cursor.clone(),
@@ -425,7 +416,7 @@ mod tests {
 
             let pi1 = p.get_page_info(
                 &PaginationMetadata {
-                    total_count: total_items,
+                    total_count: Some(total_items),
                     page_request: Some(PageRequest {
                         first: Some(5),
                         after: None,
@@ -480,7 +471,7 @@ mod tests {
             ];
 
             let meta = PaginationMetadata {
-                total_count: 3,
+                total_count: Some(3),
                 page_request: Some(PageRequest::new(
                     Some(10),
                     Some(StringCursor::new("".to_string())),
@@ -513,7 +504,7 @@ mod tests {
             ];
 
             let meta = PaginationMetadata {
-                total_count: 3,
+                total_count: Some(3),
                 page_request: Some(PageRequest {
                     first: Some(10),
                     after: None,
@@ -543,7 +534,7 @@ mod tests {
             ];
 
             let meta = PaginationMetadata {
-                total_count: 30, // More than the items returned, we have more items
+                total_count: Some(30), // More than the items returned, we have more items
                 page_request: Some(PageRequest {
                     first: Some(10),
                     after: None,
@@ -563,7 +554,7 @@ mod tests {
             let items: Vec<NoSQLItem> = vec![];
 
             let meta = PaginationMetadata {
-                total_count: 30, // More than the items returned, we have more items
+                total_count: Some(30), // More than the items returned, we have more items
                 page_request: Some(PageRequest {
                     first: Some(10),                             // More than items returned
                     after: Some("c3RyaW5nOmlkLTA=".to_string()), // id-0 - we're paginating.

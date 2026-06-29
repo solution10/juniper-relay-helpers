@@ -32,7 +32,7 @@ impl QueryRoot {
     /// cursor providers or any of the other fancy stuff.
     async fn characters(ctx: &Context) -> FieldResult<CharacterRelayConnection> {
         Ok(CharacterRelayConnection {
-            count: ctx.characters.len() as i32,
+            count: Some(ctx.characters.len() as i32),
             edges: ctx
                 .characters
                 .iter()
@@ -80,7 +80,7 @@ impl QueryRoot {
 
         Ok(LocationRelayConnection::new(
             &nodes,
-            ctx.locations.len() as i32,
+            Some(ctx.locations.len() as i32),
             OffsetCursorProvider::new(),
             Some(PageRequest::new(first, after)),
         ))
@@ -108,7 +108,7 @@ impl QueryRoot {
                 let sub_page =
                     PageRequest::new(first, Some(StringCursor::new(after_cursor.clone())));
                 let pagination_metadata = PaginationMetadata {
-                    total_count: ctx.locations.len() as i32,
+                    total_count: Some(ctx.locations.len() as i32),
                     page_request: Some(sub_page),
                 };
                 let item_cursor = cp.get_cursor_for_item(&pagination_metadata, 0, item);
@@ -126,7 +126,7 @@ impl QueryRoot {
 
         Ok(LocationRelayConnection::new(
             &nodes,
-            ctx.locations.len() as i32,
+            Some(ctx.locations.len() as i32),
             KeyedCursorProvider,
             Some(pr),
         ))

@@ -47,7 +47,7 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                     #context_clause
                 )]
                 pub struct #connection_name {
-                    pub count: i32,
+                    pub count: Option<i32>,
                     pub edges: Vec<#edge_name>,
                     pub page_info: juniper_relay_helpers::PageInfo,
                 }
@@ -59,7 +59,7 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
 
                     fn new(
                         nodes: &[#struct_name],
-                        total_items: i32,
+                        total_items: Option<i32>,
                         cursor_provider: impl juniper_relay_helpers::CursorProvider<Self::NodeType>,
                         page_request: Option<juniper_relay_helpers::PageRequest>
                     ) -> Self {

@@ -310,6 +310,7 @@ mod cursors;
 mod edges;
 mod identifier;
 mod pagination;
+mod pagination_metadata;
 
 // From other crates in the workspace:
 pub use juniper_relay_helpers_codegen::{IdentifierTypeDiscriminator, RelayConnection};
@@ -322,3 +323,4 @@ pub use cursors::*;
 pub use edges::*;
 pub use identifier::*;
 pub use pagination::*;
+pub use pagination_metadata::*;

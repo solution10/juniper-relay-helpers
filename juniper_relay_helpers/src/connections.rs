@@ -13,7 +13,7 @@ pub trait RelayConnection {
     /// can also be generated for you by providing the page info and CursorProvider trait instance.
     fn new(
         nodes: &[Self::NodeType],
-        total_items: i32,
+        total_items: Option<i32>,
         cursor_provider: impl CursorProvider<Self::NodeType>,
         page_request: Option<crate::PageRequest>,
     ) -> Self;
@@ -33,7 +33,7 @@ mod tests {
     #[test]
     fn connection_types_are_generated() {
         let conn = UserRelayConnection {
-            count: 12,
+            count: Some(12),
             edges: vec![],
             page_info: PageInfo {
                 start_cursor: None,
@@ -43,7 +43,7 @@ mod tests {
             },
         };
 
-        assert_eq!(conn.count, 12);
+        assert_eq!(conn.count, Some(12));
         assert_eq!(conn.edges.len(), 0);
     }
 
