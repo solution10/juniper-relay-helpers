@@ -1,5 +1,5 @@
 use base64::prelude::*;
-use juniper::{ParseScalarResult, ParseScalarValue, ScalarToken, ScalarValue};
+use juniper::{FromInputValue, ParseScalarResult, ParseScalarValue, ScalarToken, ScalarValue};
 use crate::CursorError;
 
 pub const CURSOR_SEGMENT_DELIMITER: &str = "||";
@@ -27,9 +27,9 @@ pub const CURSOR_SEGMENT_DELIMITER: &str = "||";
 /// impl Cursor for MyCursor { ... }
 /// ```
 ///
-pub trait Cursor {
+pub trait Cursor: Clone + FromInputValue {
     /// Concrete type of the returned cursor. Usually the thing that implements the trait.
-    type CursorType;
+    type CursorType: Cursor;
 
     /// Serialize the cursor into a string ready to be base64 encoded.
     fn to_raw_string(&self) -> String;

@@ -8,9 +8,12 @@ use syn::{Data, DeriveInput, parse_macro_input};
 pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    let context_attr: Option<syn::Path> = input.attrs.iter()
+    let relay_attr = input.attrs.iter()
         .find(|a| a.path().is_ident("relay"))
-        .and_then(|a| a.parse_args::<syn::MetaNameValue>().ok())
+        .and_then(|a| a.parse_args::<syn::MetaNameValue>().ok());
+
+    let context_attr = relay_attr
+        .clone()
         .filter(|mnv| mnv.path.is_ident("context"))
         .and_then(|mnv| {
             if let syn::Expr::Path(p) = &mnv.value { Some(p.path.clone()) } else { None }
@@ -22,24 +25,43 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
         quote! {}
     };
 
+    let cursor_attr = relay_attr
+        .filter(|mnv| mnv.path.is_ident("cursor"))
+        .and_then(|mnv| {
+            if let syn::Expr::Path(p) = &mnv.value { Some(p.path.clone()) } else { None }
+        });
+
+    let cursor_type: Option<&Ident> = if let Some(cursor_path) = &cursor_attr {
+        cursor_path.get_ident()
+    } else {
+        None
+    };
+
     let out = match input.data {
         Data::Struct(_s) => {
             let connection_gql_name = format!("{}Connection", input.ident);
             let connection_gql_desc = format!("Connection type for {}.", input.ident);
-            let edge_gql_name = format!("{}Edge", input.ident);
-            let edge_gql_desc = format!("Edge type for {}.", input.ident);
             let connection_name = Ident::new(
                 &format!("{}RelayConnection", input.ident),
                 Span::mixed_site(),
             );
+
+            let edge_gql_name = format!("{}Edge", input.ident);
+            let edge_gql_desc = format!("Edge type for {}.", input.ident);
             let edge_name = Ident::new(&format!("{}RelayEdge", input.ident), Span::mixed_site());
             let edge_trait_name = Ident::new(
                 &format!("{}RelayEdgeTrait", input.ident),
                 Span::mixed_site(),
             );
+
+            let default_cursor_type = Ident::new("StringCursor", Span::mixed_site());
+            let connection_cursor_type = cursor_type.unwrap_or(&default_cursor_type);
+
             let struct_name = input.ident;
 
             quote! {
+                use juniper_relay_helpers::StringCursor;
+
                 #[derive(juniper::GraphQLObject, Clone)]
                 #[graphql(
                     name = #connection_gql_name,
@@ -49,13 +71,14 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                 pub struct #connection_name {
                     pub count: Option<i32>,
                     pub edges: Vec<#edge_name>,
-                    pub page_info: juniper_relay_helpers::PageInfo,
+                    pub page_info: juniper_relay_helpers::PageInfo<#connection_cursor_type>,
                 }
 
                 use juniper_relay_helpers::RelayEdge as #edge_trait_name;
                 impl juniper_relay_helpers::RelayConnection for #connection_name {
                     type EdgeType = #edge_name;
                     type NodeType = #struct_name;
+                    type CursorType = #connection_cursor_type;
 
                     fn new(
                         nodes: &[#struct_name],
@@ -88,22 +111,17 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                 )]
                 pub struct #edge_name {
                     pub node: #struct_name,
-                    pub cursor: Option<String>,
+                    pub cursor: Option<#connection_cursor_type>,
                 }
 
                 impl juniper_relay_helpers::RelayEdge for #edge_name {
                     type NodeType = #struct_name;
-                    fn new(node: Self::NodeType, cursor: impl juniper_relay_helpers::Cursor) -> Self {
-                        Self {
-                            node: node,
-                            cursor: Some(cursor.to_encoded_string()),
-                        }
-                    }
+                    type CursorType = #connection_cursor_type;
 
-                    fn new_raw_cursor(node: Self::NodeType, cursor: Option<String>) -> Self {
+                    fn new(node: Self::NodeType, cursor: #connection_cursor_type) -> Self {
                         Self {
                             node: node,
-                            cursor: cursor,
+                            cursor: Some(cursor),
                         }
                     }
                 }
