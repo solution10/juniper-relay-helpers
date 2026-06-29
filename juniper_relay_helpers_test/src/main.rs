@@ -6,6 +6,7 @@
 //! Application is also used for integration tests.
 //!
 
+use std::fs;
 use crate::schema::{QueryRoot, Schema, get_character_test_data, get_location_test_data, get_music_test_data};
 use crate::context::Context;
 use axum::Router;
@@ -36,6 +37,13 @@ fn build_app() -> Router {
         EmptyMutation::new(),
         EmptySubscription::new(),
     ));
+
+    // Write out the schema file so we can keep an eye on diffs:
+    let sdl = schema.as_sdl();
+    let output_path = format!("{}/schema.graphql", env!("CARGO_MANIFEST_DIR"));
+    if let Err(e) = fs::write(output_path, &sdl) {
+        eprintln!("Failed to write schema file: {}", e);
+    }
 
     // Build the app context:
     let ctx = AppContext {
@@ -268,7 +276,7 @@ mod integration_tests {
                                 "cursor": expect_json::string(),
                             })),
                         "pageInfo": expect_json::object().contains(json!({
-                            "hasNextPage": false,
+                            "hasNextPage": true,
                             "hasPrevPage": false
                         }))
                     }))

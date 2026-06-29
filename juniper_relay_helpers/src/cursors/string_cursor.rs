@@ -4,7 +4,7 @@ use crate::{Cursor, CursorError, CURSOR_SEGMENT_DELIMITER};
 
 /// Built-in cursor type for when the cursor is just a string. Usually useful for things like
 /// NoSQL systems that return something opaque to you.
-#[derive(Debug, GraphQLScalar, Clone)]
+#[derive(Debug, GraphQLScalar, Clone, Eq, PartialEq)]
 pub struct StringCursor {
     /// The value of the cursor.
     pub value: String,

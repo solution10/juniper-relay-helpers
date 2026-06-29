@@ -3,7 +3,7 @@ use juniper::GraphQLScalar;
 use crate::{Cursor, CursorError, CURSOR_SEGMENT_DELIMITER};
 
 /// A simple offset-based cursor.
-#[derive(Debug, GraphQLScalar, Default, Clone)]
+#[derive(Debug, GraphQLScalar, Default, Clone, Eq, PartialEq)]
 #[graphql(
     name = "OffsetCursor",
     to_output_with = Self::to_output,

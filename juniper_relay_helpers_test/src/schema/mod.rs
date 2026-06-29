@@ -7,9 +7,10 @@ pub use crate::schema::location::{Location, LocationRelayConnection, LocationRow
 pub use crate::schema::music::{MusicRow, MusicTrack};
 use juniper::{EmptyMutation, EmptySubscription, FieldResult, RootNode};
 use juniper_relay_helpers::{
-    Cursor, CursorProvider, KeyedCursorProvider, OffsetCursor, OffsetCursorProvider, PageInfo,
+    CursorProvider, KeyedCursorProvider, OffsetCursor,
     PageRequest, PaginationMetadata, RelayConnection, RelayEdge, RelayIdentifier, StringCursor,
 };
+use crate::schema::character::CharacterRelayConnectionPageInfo;
 
 mod character;
 mod identifiers;
@@ -47,7 +48,7 @@ impl QueryRoot {
                     )
                 })
                 .collect(),
-            page_info: PageInfo {
+            page_info: CharacterRelayConnectionPageInfo {
                 has_next_page: false,
                 has_prev_page: false,
                 start_cursor: None,
@@ -61,35 +62,6 @@ impl QueryRoot {
     /// hand off to the library:
     async fn locations(
         first: Option<i32>,
-        after: Option<OffsetCursor>,
-        ctx: &Context,
-    ) -> FieldResult<LocationRelayConnection> {
-        let mut nodes = ctx
-            .locations
-            .iter()
-            .map(|row| Location::from(row.clone()))
-            .collect::<Vec<Location>>();
-
-        if let Some(after) = &after {
-            nodes = nodes.split_off(after.offset as usize + 1);
-        }
-
-        if let Some(first) = first {
-            nodes.truncate(first as usize);
-        }
-
-        Ok(LocationRelayConnection::new(
-            &nodes,
-            Some(ctx.locations.len() as i32),
-            OffsetCursorProvider::new(),
-            Some(PageRequest::new(first, after)),
-        ))
-    }
-
-    /// Queries for all locations in the "database"
-    /// This method makes use of the String cursor provider to show how you can use that one too!
-    async fn locations_string_cursor(
-        first: Option<i32>,
         after: Option<StringCursor>,
         ctx: &Context,
     ) -> FieldResult<LocationRelayConnection> {
@@ -100,19 +72,19 @@ impl QueryRoot {
             .collect::<Vec<Location>>();
 
         let cp = KeyedCursorProvider;
-        let pr = PageRequest::new(first, after);
+        let pr = PageRequest::new(first, after.clone(), None);
 
         if let Some(after_cursor) = &pr.after {
             // Find the starting item:
             let idx = nodes.iter().position(|item| {
                 let sub_page =
-                    PageRequest::new(first, Some(StringCursor::new(after_cursor.clone())));
+                    PageRequest::new(first, Some(after_cursor.clone()), None);
                 let pagination_metadata = PaginationMetadata {
                     total_count: Some(ctx.locations.len() as i32),
                     page_request: Some(sub_page),
                 };
                 let item_cursor = cp.get_cursor_for_item(&pagination_metadata, 0, item);
-                item_cursor.to_encoded_string().eq(after_cursor)
+                item_cursor.eq(after_cursor)
             });
 
             if let Some(idx) = idx {
@@ -128,7 +100,7 @@ impl QueryRoot {
             &nodes,
             Some(ctx.locations.len() as i32),
             KeyedCursorProvider,
-            Some(pr),
+            Some(PageRequest::new(first, after, None)),
         ))
     }
 

@@ -2,7 +2,7 @@
 mod integration_tests {
     use googletest::prelude::*;
     use juniper::{EmptyMutation, EmptySubscription, FieldResult, GraphQLObject, RootNode};
-    use juniper_relay_helpers::{PageInfo, RelayConnection};
+    use juniper_relay_helpers::{RelayConnection, StringCursor};
 
     // ---- Define the types ----
 
@@ -36,10 +36,10 @@ mod integration_tests {
                         node: User {
                             name: "Sciel".to_owned(),
                         },
-                        cursor: Some("some-string".to_owned()),
+                        cursor: Some(StringCursor::new("some-string".to_string())),
                     },
                 ],
-                page_info: PageInfo {
+                page_info: UserRelayConnectionPageInfo {
                     start_cursor: None,
                     end_cursor: None,
                     has_prev_page: false,
@@ -52,7 +52,7 @@ mod integration_tests {
             Ok(PostRelayConnection {
                 count: Some(0),
                 edges: vec![],
-                page_info: PageInfo {
+                page_info: PostRelayConnectionPageInfo {
                     start_cursor: None,
                     end_cursor: None,
                     has_prev_page: false,
@@ -107,7 +107,7 @@ mod integration_tests {
         let schema_document = build_schema();
         let schema_sdl = schema_document.as_sdl();
 
-        assert_that!(schema_sdl, contains_substring("type PageInfo"));
-        assert_that!(schema_sdl, contains_substring("Pagination information"));
+        assert_that!(schema_sdl, contains_substring("type UserConnectionPageInfo"));
+        assert_that!(schema_sdl, contains_substring("type PostConnectionPageInfo"));
     }
 }

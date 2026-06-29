@@ -1,0 +1,109 @@
+schema {
+  query: QueryRoot
+}
+
+"A simple offset-based cursor."
+scalar OffsetCursor
+
+"""
+  Built-in cursor type for when the cursor is just a string. Usually useful for things like
+  NoSQL systems that return something opaque to you.
+"""
+scalar StringCursor
+
+"""
+  [Universally Unique Identifier][0] (UUID).
+
+  [`UUID` scalar][1] compliant.
+
+  See also [`uuid::Uuid`][2] for details.
+
+  [0]: https://en.wikipedia.org/wiki/Universally_unique_identifier
+  [1]: https://graphql-scalars.dev/docs/scalars/uuid
+  [2]: https://docs.rs/uuid/*/uuid/struct.Uuid.html
+"""
+scalar UUID
+
+"GraphQL type for a character."
+type Character {
+  id: ID!
+  name: String!
+}
+
+"Connection type for Character."
+type CharacterConnection {
+  count: Int
+  edges: [CharacterEdge!]!
+  pageInfo: CharacterConnectionPageInfo!
+}
+
+"PageInfo type for Character."
+type CharacterConnectionPageInfo {
+  "Indicates whether there is a page following this current one"
+  hasNextPage: Boolean!
+  "Indicates whether there is a page preceding this one"
+  hasPrevPage: Boolean!
+  "An opaque cursor that when passed to before: in a query will return the previous page of results."
+  startCursor: OffsetCursor
+  "An opaque cursor that when passed to after: in a query will return the following page of results."
+  endCursor: OffsetCursor
+}
+
+"Edge type for Character."
+type CharacterEdge {
+  node: Character!
+  cursor: OffsetCursor
+}
+
+"GraphQL type for a character."
+type Location {
+  id: ID!
+  name: String!
+}
+
+"Connection type for Location."
+type LocationConnection {
+  count: Int
+  edges: [LocationEdge!]!
+  pageInfo: LocationConnectionPageInfo!
+}
+
+"PageInfo type for Location."
+type LocationConnectionPageInfo {
+  "Indicates whether there is a page following this current one"
+  hasNextPage: Boolean!
+  "Indicates whether there is a page preceding this one"
+  hasPrevPage: Boolean!
+  "An opaque cursor that when passed to before: in a query will return the previous page of results."
+  startCursor: StringCursor
+  "An opaque cursor that when passed to after: in a query will return the following page of results."
+  endCursor: StringCursor
+}
+
+"Edge type for Location."
+type LocationEdge {
+  node: Location!
+  cursor: StringCursor
+}
+
+type MusicTrack {
+  id: UUID!
+  title: String!
+  locationsHeard: [Location!]!
+}
+
+type QueryRoot {
+  """
+    Queries for all characters in the "database"
+    This method shows how you can manually build up the resulting structs without using
+    cursor providers or any of the other fancy stuff.
+  """
+  characters: CharacterConnection!
+  """
+    Queries for all locations in the "database"
+    This method makes use of cursor providers and the shortcut methods to show how much you can
+    hand off to the library:
+  """
+  locations(first: Int, after: StringCursor): LocationConnection!
+  music: [MusicTrack!]!
+}

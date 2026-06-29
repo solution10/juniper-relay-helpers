@@ -1,4 +1,4 @@
-use crate::RelayEdge;
+use crate::{Cursor, RelayEdge};
 use crate::cursor_provider::CursorProvider;
 
 /// Common trait for Relay connections. Will be implemented by the codegen.
@@ -9,23 +9,29 @@ pub trait RelayConnection {
     /// The underlying type of Node we're Connection-ing. Will be filled in for you by the codegen.
     type NodeType;
 
+    /// The type of Cursor that this connection uses.
+    type CursorType: Cursor;
+
     /// Builds a connection and associated edges from a Vec of the Nodes themselves. Pagination cursors
     /// can also be generated for you by providing the page info and CursorProvider trait instance.
-    fn new(
+    fn new<ProviderT>(
         nodes: &[Self::NodeType],
         total_items: Option<i32>,
-        cursor_provider: impl CursorProvider<Self::NodeType>,
-        page_request: Option<crate::PageRequest>,
-    ) -> Self;
+        cursor_provider: ProviderT,
+        page_request: Option<crate::PageRequest<Self::CursorType>>,
+    ) -> Self
+    where
+        ProviderT: CursorProvider<Self::NodeType, CursorType = Self::CursorType>;
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{OffsetCursor, PageInfo};
+    use crate::{OffsetCursor};
     use juniper::GraphQLObject;
     use juniper_relay_helpers_codegen::RelayConnection;
 
     #[derive(Debug, GraphQLObject, RelayConnection, Clone, Eq, PartialEq)]
+    #[relay(cursor = OffsetCursor)]
     pub struct User {
         name: String,
     }
@@ -35,7 +41,7 @@ mod tests {
         let conn = UserRelayConnection {
             count: Some(12),
             edges: vec![],
-            page_info: PageInfo {
+            page_info: UserRelayConnectionPageInfo {
                 start_cursor: None,
                 end_cursor: None,
                 has_prev_page: false,
@@ -53,10 +59,10 @@ mod tests {
             node: User {
                 name: "Lune".to_owned(),
             },
-            cursor: Some("some-string".to_owned()),
+            cursor: Some(OffsetCursor::new(527)),
         };
         assert_eq!(edge.node.name, "Lune");
-        assert_eq!(edge.cursor, Some("some-string".to_owned()));
+        assert_eq!(edge.cursor, Some(OffsetCursor::new(527)));
     }
 
     #[test]
@@ -65,18 +71,9 @@ mod tests {
             User {
                 name: "Lune".to_owned(),
             },
-            OffsetCursor::new(0),
+            OffsetCursor::new(27),
         );
         assert_eq!(edge.node.name, "Lune");
-        assert_eq!(edge.cursor, Some("b2Zmc2V0fHww".into()));
-
-        let edge2 = UserRelayEdge::new_raw_cursor(
-            User {
-                name: "Sciel".to_owned(),
-            },
-            Some("some-cursor".to_owned()),
-        );
-        assert_eq!(edge2.node.name, "Sciel");
-        assert_eq!(edge2.cursor, Some("some-cursor".into()));
+        assert_eq!(edge.cursor, Some(OffsetCursor::new(27)));
     }
 }

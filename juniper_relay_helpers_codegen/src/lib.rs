@@ -8,10 +8,14 @@ use syn::{Data, DeriveInput, parse_macro_input};
 pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    let context_attr: Option<syn::Path> = input.attrs.iter()
+    let relay_attrs: Option<syn::punctuated::Punctuated<syn::MetaNameValue, syn::Token![,]>> = input.attrs.iter()
         .find(|a| a.path().is_ident("relay"))
-        .and_then(|a| a.parse_args::<syn::MetaNameValue>().ok())
-        .filter(|mnv| mnv.path.is_ident("context"))
+        .and_then(|a| a.parse_args_with(
+            syn::punctuated::Punctuated::<syn::MetaNameValue, syn::Token![,]>::parse_terminated
+        ).ok());
+
+    let context_attr = relay_attrs.as_ref()
+        .and_then(|attrs| attrs.iter().find(|mnv| mnv.path.is_ident("context")))
         .and_then(|mnv| {
             if let syn::Expr::Path(p) = &mnv.value { Some(p.path.clone()) } else { None }
         });
@@ -22,21 +26,39 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
         quote! {}
     };
 
+    let cursor_attr = relay_attrs
+        .and_then(|attrs| attrs.into_iter().find(|mnv| mnv.path.is_ident("cursor")))
+        .and_then(|mnv| {
+            if let syn::Expr::Path(p) = mnv.value { Some(p.path) } else { None }
+        });
+
+    let cursor_type = if let Some(cursor_path) = &cursor_attr {
+        quote! { #cursor_path }
+    } else {
+        quote! { juniper_relay_helpers::StringCursor }
+    };
+
     let out = match input.data {
         Data::Struct(_s) => {
             let connection_gql_name = format!("{}Connection", input.ident);
             let connection_gql_desc = format!("Connection type for {}.", input.ident);
-            let edge_gql_name = format!("{}Edge", input.ident);
-            let edge_gql_desc = format!("Edge type for {}.", input.ident);
             let connection_name = Ident::new(
                 &format!("{}RelayConnection", input.ident),
                 Span::mixed_site(),
             );
+
+            let edge_gql_name = format!("{}Edge", input.ident);
+            let edge_gql_desc = format!("Edge type for {}.", input.ident);
             let edge_name = Ident::new(&format!("{}RelayEdge", input.ident), Span::mixed_site());
             let edge_trait_name = Ident::new(
                 &format!("{}RelayEdgeTrait", input.ident),
                 Span::mixed_site(),
             );
+
+            let page_info_gql_name = format!("{}ConnectionPageInfo", input.ident);
+            let page_info_gql_desc = format!("PageInfo type for {}.", input.ident);
+            let page_info_name = Ident::new(&format!("{}RelayConnectionPageInfo", input.ident), Span::mixed_site());
+
             let struct_name = input.ident;
 
             quote! {
@@ -49,21 +71,25 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                 pub struct #connection_name {
                     pub count: Option<i32>,
                     pub edges: Vec<#edge_name>,
-                    pub page_info: juniper_relay_helpers::PageInfo,
+                    pub page_info: #page_info_name,
                 }
 
                 use juniper_relay_helpers::RelayEdge as #edge_trait_name;
                 impl juniper_relay_helpers::RelayConnection for #connection_name {
                     type EdgeType = #edge_name;
                     type NodeType = #struct_name;
+                    type CursorType = #cursor_type;
 
-                    fn new(
+                    fn new<ProviderT>(
                         nodes: &[#struct_name],
                         total_items: Option<i32>,
-                        cursor_provider: impl juniper_relay_helpers::CursorProvider<Self::NodeType>,
-                        page_request: Option<juniper_relay_helpers::PageRequest>
-                    ) -> Self {
-                        let metadata = juniper_relay_helpers::PaginationMetadata {
+                        cursor_provider: ProviderT,
+                        page_request: Option<juniper_relay_helpers::PageRequest<#cursor_type>>,
+                    ) -> Self
+                    where
+                        ProviderT: juniper_relay_helpers::CursorProvider<Self::NodeType, CursorType = #cursor_type>
+                    {
+                        let metadata = juniper_relay_helpers::PaginationMetadata::<#cursor_type> {
                             total_count: total_items,
                             page_request
                         };
@@ -88,22 +114,52 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                 )]
                 pub struct #edge_name {
                     pub node: #struct_name,
-                    pub cursor: Option<String>,
+                    pub cursor: Option<#cursor_type>,
                 }
 
                 impl juniper_relay_helpers::RelayEdge for #edge_name {
                     type NodeType = #struct_name;
-                    fn new(node: Self::NodeType, cursor: impl juniper_relay_helpers::Cursor) -> Self {
+                    type CursorType = #cursor_type;
+
+                    fn new(node: Self::NodeType, cursor: #cursor_type) -> Self {
                         Self {
                             node: node,
-                            cursor: Some(cursor.to_encoded_string()),
+                            cursor: Some(cursor),
                         }
                     }
+                }
 
-                    fn new_raw_cursor(node: Self::NodeType, cursor: Option<String>) -> Self {
+                #[derive(juniper::GraphQLObject, Clone)]
+                #[graphql(
+                    name = #page_info_gql_name,
+                    description = #page_info_gql_desc
+                    #context_clause
+                )]
+                pub struct #page_info_name {
+                    #[graphql(description = "Indicates whether there is a page following this current one")]
+                    pub has_next_page: bool,
+
+                    #[graphql(description = "Indicates whether there is a page preceding this one")]
+                    pub has_prev_page: bool,
+
+                    #[graphql(
+                        description = "An opaque cursor that when passed to before: in a query will return the previous page of results."
+                    )]
+                    pub start_cursor: Option<#cursor_type>,
+
+                    #[graphql(
+                        description = "An opaque cursor that when passed to after: in a query will return the following page of results."
+                    )]
+                    pub end_cursor: Option<#cursor_type>,
+                }
+
+                impl juniper_relay_helpers::PageInfoFactory<#cursor_type> for #page_info_name {
+                    fn new(has_prev_page: bool, has_next_page: bool, start_cursor: Option<#cursor_type>, end_cursor: Option<#cursor_type>) -> Self {
                         Self {
-                            node: node,
-                            cursor: cursor,
+                            has_next_page,
+                            has_prev_page,
+                            start_cursor,
+                            end_cursor,
                         }
                     }
                 }
