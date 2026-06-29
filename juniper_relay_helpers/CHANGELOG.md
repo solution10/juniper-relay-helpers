@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.0](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers-v0.4.0...juniper_relay_helpers-v0.5.0) - 2026-06-29
+
+### Added
+
+- [**breaking**] make count optional in connection type ([#33](https://github.com/solution10/juniper-relay-helpers/pull/33))
+
 ## [0.4.0](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers-v0.3.3...juniper_relay_helpers-v0.4.0) - 2026-06-28
 
 ### Added
