@@ -24,7 +24,7 @@ mod integration_tests {
     impl QueryRoot {
         fn get_users() -> FieldResult<UserRelayConnection> {
             Ok(UserRelayConnection {
-                count: 12,
+                count: Some(12),
                 edges: vec![
                     UserRelayEdge {
                         node: User {
@@ -50,7 +50,7 @@ mod integration_tests {
 
         fn get_posts() -> FieldResult<PostRelayConnection> {
             Ok(PostRelayConnection {
-                count: 0,
+                count: Some(0),
                 edges: vec![],
                 page_info: PageInfo {
                     start_cursor: None,
