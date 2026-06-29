@@ -87,7 +87,7 @@ enum MyEntityTypes {
 }
 
 #[derive(GraphQLObject, RelayConnection)]
-#[relay(context = MyCustomContext)]
+#[relay(context = MyCustomContext, cursor = OffsetCursor)]
 struct User {
   id: RelayIdentifier<UUID, MyEntityTypes>,
   name: String
