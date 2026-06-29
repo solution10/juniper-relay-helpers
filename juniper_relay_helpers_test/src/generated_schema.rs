@@ -107,7 +107,13 @@ mod integration_tests {
         let schema_document = build_schema();
         let schema_sdl = schema_document.as_sdl();
 
-        assert_that!(schema_sdl, contains_substring("type UserConnectionPageInfo"));
-        assert_that!(schema_sdl, contains_substring("type PostConnectionPageInfo"));
+        assert_that!(
+            schema_sdl,
+            contains_substring("type UserConnectionPageInfo")
+        );
+        assert_that!(
+            schema_sdl,
+            contains_substring("type PostConnectionPageInfo")
+        );
     }
 }

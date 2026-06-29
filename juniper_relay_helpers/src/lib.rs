@@ -316,9 +316,9 @@ mod cursor_provider;
 mod cursors;
 mod edges;
 mod identifier;
+mod page_info_factory;
 mod page_request;
 mod pagination_metadata;
-mod page_info_factory;
 
 // From other crates in the workspace:
 pub use juniper_relay_helpers_codegen::{IdentifierTypeDiscriminator, RelayConnection};

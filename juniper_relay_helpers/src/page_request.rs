@@ -1,4 +1,4 @@
-use crate::{Cursor};
+use crate::Cursor;
 
 /// Represents a common Relay pagination request pattern. You'd usually build this from the arguments
 /// into the query resolver, and can then pass that into service calls etc.
@@ -17,7 +17,10 @@ use crate::{Cursor};
 /// This struct can be used to represent the first and after arguments.
 ///
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct PageRequest<CursorType> where CursorType: Cursor {
+pub struct PageRequest<CursorType>
+where
+    CursorType: Cursor,
+{
     /// The number of items to return.
     pub first: Option<i32>,
 
@@ -28,7 +31,10 @@ pub struct PageRequest<CursorType> where CursorType: Cursor {
     pub after: Option<CursorType>,
 }
 
-impl<CursorT> PageRequest<CursorT> where CursorT: Cursor {
+impl<CursorT> PageRequest<CursorT>
+where
+    CursorT: Cursor,
+{
     /// Helper method to build from the component parts from a query resolver
     pub fn new(first: Option<i32>, after: Option<CursorT>, before: Option<CursorT>) -> Self {
         PageRequest {

@@ -6,9 +6,10 @@
 //! Application is also used for integration tests.
 //!
 
-use std::fs;
-use crate::schema::{QueryRoot, Schema, get_character_test_data, get_location_test_data, get_music_test_data};
 use crate::context::Context;
+use crate::schema::{
+    QueryRoot, Schema, get_character_test_data, get_location_test_data, get_music_test_data,
+};
 use axum::Router;
 use axum::extract::State;
 use axum::response::{Html, IntoResponse};
@@ -17,12 +18,13 @@ use juniper::http::graphiql;
 use juniper::{EmptyMutation, EmptySubscription};
 use juniper_axum::extract::JuniperRequest;
 use juniper_axum::response::JuniperResponse;
+use std::fs;
 use std::sync::Arc;
 use tracing::info;
 
+mod context;
 mod generated_schema;
 mod schema;
-mod context;
 
 #[derive(Clone)]
 struct AppContext {
@@ -159,9 +161,9 @@ mod integration_tests {
         use crate::build_app;
         use crate::integration_tests::ALL_MUSIC_QUERY;
         use axum_test::TestServer;
+        use axum_test::expect_json;
         use axum_test::expect_json::__private::serde_json;
         use axum_test::expect_json::__private::serde_json::json;
-        use axum_test::expect_json;
         use serde::{Deserialize, Serialize};
 
         #[derive(Serialize, Deserialize, Debug, Clone)]

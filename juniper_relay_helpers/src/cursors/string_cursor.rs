@@ -1,6 +1,6 @@
-use std::fmt::{Display, Formatter};
+use crate::{CURSOR_SEGMENT_DELIMITER, Cursor, CursorError};
 use juniper::GraphQLScalar;
-use crate::{Cursor, CursorError, CURSOR_SEGMENT_DELIMITER};
+use std::fmt::{Display, Formatter};
 
 /// Built-in cursor type for when the cursor is just a string. Usually useful for things like
 /// NoSQL systems that return something opaque to you.
@@ -69,5 +69,4 @@ mod tests {
         let cursor = StringCursor::from_encoded_string("c3RyaW5nfHxzb21lLWN1cnNvcg==").unwrap();
         assert_eq!(cursor.value, "some-cursor");
     }
-
 }

@@ -1,6 +1,6 @@
-use std::fmt::{Display, Formatter};
+use crate::{CURSOR_SEGMENT_DELIMITER, Cursor, CursorError};
 use juniper::GraphQLScalar;
-use crate::{Cursor, CursorError, CURSOR_SEGMENT_DELIMITER};
+use std::fmt::{Display, Formatter};
 
 /// A simple offset-based cursor.
 #[derive(Debug, GraphQLScalar, Default, Clone, Eq, PartialEq)]
@@ -38,7 +38,9 @@ impl OffsetCursor {
             return None;
         }
 
-        Some(OffsetCursor::new(self.offset.checked_add(first).unwrap_or(0)))
+        Some(OffsetCursor::new(
+            self.offset.checked_add(first).unwrap_or(0),
+        ))
     }
 
     /// Returns the "previous" cursor based on subtracting from the current one. This is obviously not guaranteed to be
@@ -97,17 +99,13 @@ mod tests {
 
     #[test]
     fn test_raw_string() {
-        let cursor = OffsetCursor {
-            offset: 1,
-        };
+        let cursor = OffsetCursor { offset: 1 };
         assert_eq!(cursor.to_string(), "offset||1");
     }
 
     #[test]
     fn test_encoded_string() {
-        let cursor = OffsetCursor {
-            offset: 1,
-        };
+        let cursor = OffsetCursor { offset: 1 };
         assert_eq!(cursor.to_encoded_string(), "b2Zmc2V0fHwx");
     }
 
