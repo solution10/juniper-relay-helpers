@@ -33,7 +33,7 @@ type Character {
 "Connection type for Character."
 type CharacterConnection {
   count: Int
-  edges: [CharacterEdge!]!
+  edges: [CharacterEdge]
   pageInfo: CharacterConnectionPageInfo!
 }
 
@@ -42,7 +42,7 @@ type CharacterConnectionPageInfo {
   "Indicates whether there is a page following this current one"
   hasNextPage: Boolean!
   "Indicates whether there is a page preceding this one"
-  hasPrevPage: Boolean!
+  hasPreviousPage: Boolean!
   "An opaque cursor that when passed to before: in a query will return the previous page of results."
   startCursor: OffsetCursor
   "An opaque cursor that when passed to after: in a query will return the following page of results."
@@ -51,7 +51,7 @@ type CharacterConnectionPageInfo {
 
 "Edge type for Character."
 type CharacterEdge {
-  node: Character!
+  node: Character
   cursor: OffsetCursor
 }
 
@@ -64,7 +64,7 @@ type Location {
 "Connection type for Location."
 type LocationConnection {
   count: Int
-  edges: [LocationEdge!]!
+  edges: [LocationEdge]
   pageInfo: LocationConnectionPageInfo!
 }
 
@@ -73,7 +73,7 @@ type LocationConnectionPageInfo {
   "Indicates whether there is a page following this current one"
   hasNextPage: Boolean!
   "Indicates whether there is a page preceding this one"
-  hasPrevPage: Boolean!
+  hasPreviousPage: Boolean!
   "An opaque cursor that when passed to before: in a query will return the previous page of results."
   startCursor: StringCursor
   "An opaque cursor that when passed to after: in a query will return the following page of results."
@@ -82,7 +82,7 @@ type LocationConnectionPageInfo {
 
 "Edge type for Location."
 type LocationEdge {
-  node: Location!
+  node: Location
   cursor: StringCursor
 }
 

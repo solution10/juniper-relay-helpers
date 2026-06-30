@@ -87,7 +87,7 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                 )]
                 pub struct #connection_name {
                     pub count: Option<i32>,
-                    pub edges: Vec<#edge_name>,
+                    pub edges: Option<Vec<Option<#edge_name>>>,
                     pub page_info: #page_info_name,
                 }
 
@@ -98,7 +98,7 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                     type CursorType = #cursor_type;
 
                     fn new<ProviderT>(
-                        nodes: &[#struct_name],
+                        nodes: Option<&[Option<#struct_name>]>,
                         total_items: Option<i32>,
                         cursor_provider: ProviderT,
                         page_request: Option<juniper_relay_helpers::PageRequest<#cursor_type>>,
@@ -112,13 +112,15 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                         };
                         Self {
                             count: total_items,
-                            edges: nodes.iter().enumerate().map(|(idx, node)| {
-                                #edge_name::new(
-                                    node.clone(),
-                                    cursor_provider.get_cursor_for_item(&metadata, idx as i32, node)
+                            edges: nodes.map(|n| n.iter().enumerate().map(|(idx, node)| {
+                                Some(
+                                    #edge_name::new(
+                                        node.clone(),
+                                        cursor_provider.get_cursor_for_item(&metadata, idx as i32, node.as_ref())
+                                    )
                                 )
-                            }).collect(),
-                            page_info: cursor_provider.get_page_info(&metadata, &nodes),
+                            }).collect()),
+                            page_info: cursor_provider.get_page_info(&metadata, nodes),
                         }
                     }
                 }
@@ -130,7 +132,7 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                     #context_clause
                 )]
                 pub struct #edge_name {
-                    pub node: #struct_name,
+                    pub node: Option<#struct_name>,
                     pub cursor: Option<#cursor_type>,
                 }
 
@@ -138,9 +140,9 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                     type NodeType = #struct_name;
                     type CursorType = #cursor_type;
 
-                    fn new(node: Self::NodeType, cursor: #cursor_type) -> Self {
+                    fn new(node: Option<Self::NodeType>, cursor: #cursor_type) -> Self {
                         Self {
-                            node: node,
+                            node,
                             cursor: Some(cursor),
                         }
                     }
@@ -157,7 +159,7 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                     pub has_next_page: bool,
 
                     #[graphql(description = "Indicates whether there is a page preceding this one")]
-                    pub has_prev_page: bool,
+                    pub has_previous_page: bool,
 
                     #[graphql(
                         description = "An opaque cursor that when passed to before: in a query will return the previous page of results."
@@ -171,10 +173,10 @@ pub fn macro_relay_connection_node(input: TokenStream) -> TokenStream {
                 }
 
                 impl juniper_relay_helpers::PageInfoFactory<#cursor_type> for #page_info_name {
-                    fn new(has_prev_page: bool, has_next_page: bool, start_cursor: Option<#cursor_type>, end_cursor: Option<#cursor_type>) -> Self {
+                    fn new(has_previous_page: bool, has_next_page: bool, start_cursor: Option<#cursor_type>, end_cursor: Option<#cursor_type>) -> Self {
                         Self {
                             has_next_page,
-                            has_prev_page,
+                            has_previous_page,
                             start_cursor,
                             end_cursor,
                         }
