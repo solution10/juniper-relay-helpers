@@ -33,23 +33,24 @@ impl QueryRoot {
     async fn characters(ctx: &Context) -> FieldResult<CharacterRelayConnection> {
         Ok(CharacterRelayConnection {
             count: Some(ctx.characters.len() as i32),
-            edges: ctx
-                .characters
-                .iter()
-                .enumerate()
-                .map(|(idx, row)| {
-                    CharacterRelayEdge::new(
-                        Character {
-                            id: RelayIdentifier::new(row.id, EntityType::Character),
-                            name: row.name.clone(),
-                        },
-                        OffsetCursor::new(idx as i32),
-                    )
-                })
-                .collect(),
+            edges: Some(
+                ctx.characters
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, row)| {
+                        Some(CharacterRelayEdge::new(
+                            Some(Character {
+                                id: RelayIdentifier::new(row.id, EntityType::Character),
+                                name: row.name.clone(),
+                            }),
+                            OffsetCursor::new(idx as i32),
+                        ))
+                    })
+                    .collect(),
+            ),
             page_info: CharacterRelayConnectionPageInfo {
                 has_next_page: false,
-                has_prev_page: false,
+                has_previous_page: false,
                 start_cursor: None,
                 end_cursor: None,
             },
@@ -81,7 +82,7 @@ impl QueryRoot {
                     total_count: Some(ctx.locations.len() as i32),
                     page_request: Some(sub_page),
                 };
-                let item_cursor = cp.get_cursor_for_item(&pagination_metadata, 0, item);
+                let item_cursor = cp.get_cursor_for_item(&pagination_metadata, 0, Some(item));
                 item_cursor.eq(after_cursor)
             });
 
@@ -94,8 +95,9 @@ impl QueryRoot {
             nodes.truncate(first as usize);
         }
 
+        let some_nodes: Vec<Option<Location>> = nodes.into_iter().map(Some).collect();
         Ok(LocationRelayConnection::new(
-            &nodes,
+            Some(some_nodes.as_slice()),
             Some(ctx.locations.len() as i32),
             KeyedCursorProvider,
             Some(PageRequest::new(first, after, None)),

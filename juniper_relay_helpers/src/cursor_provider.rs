@@ -19,14 +19,14 @@ pub trait CursorProvider<ItemT> {
         &self,
         metadata: &PaginationMetadata<Self::CursorType>,
         item_idx: i32,
-        item: &ItemT,
+        item: Option<&ItemT>,
     ) -> Self::CursorType;
 
     /// Builds the `PageInfo` to return to the RelayConnection
     fn get_page_info<PageInfoType>(
         &self,
         metadata: &PaginationMetadata<Self::CursorType>,
-        items: &[ItemT],
+        items: Option<&[Option<ItemT>]>,
     ) -> PageInfoType
     where
         PageInfoType: PageInfoFactory<Self::CursorType>;
@@ -44,7 +44,7 @@ impl<ItemT> CursorProvider<ItemT> for OffsetCursorProvider {
         &self,
         metadata: &PaginationMetadata<OffsetCursor>,
         item_idx: i32,
-        _item: &ItemT,
+        _item: Option<&ItemT>,
     ) -> OffsetCursor {
         // OK this is annoying. If there _was_ a cursor passed to `after`, the offset needs to start
         // at the next item. If there wasn't, the offset needs to start at the first item (0).
@@ -68,7 +68,7 @@ impl<ItemT> CursorProvider<ItemT> for OffsetCursorProvider {
     fn get_page_info<PageInfoType>(
         &self,
         metadata: &PaginationMetadata<OffsetCursor>,
-        items: &[ItemT],
+        items: Option<&[Option<ItemT>]>,
     ) -> PageInfoType
     where
         PageInfoType: PageInfoFactory<OffsetCursor>,
@@ -95,14 +95,22 @@ impl<ItemT> CursorProvider<ItemT> for OffsetCursorProvider {
         PageInfoType::new(
             current_cursor.offset > 0,
             has_next_page,
-            if !items.is_empty() {
-                Some(self.get_cursor_for_item(metadata, 0, &items[0]))
+            if let Some(items) = items
+                && !items.is_empty()
+            {
+                Some(self.get_cursor_for_item(metadata, 0, items[0].as_ref()))
             } else {
                 None
             },
-            if !items.is_empty() {
+            if let Some(items) = items
+                && !items.is_empty()
+            {
                 let last_index = items.len() - 1;
-                Some(self.get_cursor_for_item(metadata, last_index as i32, &items[last_index]))
+                Some(self.get_cursor_for_item(
+                    metadata,
+                    last_index as i32,
+                    items[last_index].as_ref(),
+                ))
             } else {
                 None
             },
@@ -151,15 +159,15 @@ where
         &self,
         _metadata: &PaginationMetadata<StringCursor>,
         _item_idx: i32,
-        item: &ItemT,
+        item: Option<&ItemT>,
     ) -> StringCursor {
-        StringCursor::new(item.cursor_key())
+        StringCursor::new(item.map(|i| i.cursor_key()).unwrap_or_default())
     }
 
     fn get_page_info<PageInfoType>(
         &self,
         metadata: &PaginationMetadata<StringCursor>,
-        items: &[ItemT],
+        items: Option<&[Option<ItemT>]>,
     ) -> PageInfoType
     where
         PageInfoType: PageInfoFactory<StringCursor>,
@@ -167,13 +175,19 @@ where
         let mut first_item_cursor: Option<StringCursor> = None;
         let mut last_item_cursor: Option<StringCursor> = None;
 
-        if let Some(first_item) = items.first() {
-            first_item_cursor = Some(self.get_cursor_for_item(metadata, 0, first_item));
-        }
+        if let Some(items) = items {
+            if let Some(first_item) = items.first() {
+                first_item_cursor =
+                    Some(self.get_cursor_for_item(metadata, 0, first_item.as_ref()));
+            }
 
-        if let Some(last_item) = items.last() {
-            last_item_cursor =
-                Some(self.get_cursor_for_item(metadata, items.len() as i32 - 1, last_item));
+            if let Some(last_item) = items.last() {
+                last_item_cursor = Some(self.get_cursor_for_item(
+                    metadata,
+                    items.len() as i32 - 1,
+                    last_item.as_ref(),
+                ));
+            }
         }
 
         let mut has_previous_page = false;
@@ -183,9 +197,15 @@ where
             has_previous_page = true;
         }
 
+        let has_next_page = if let Some(items) = items {
+            !items.is_empty()
+        } else {
+            false
+        };
+
         PageInfoType::new(
             has_previous_page,
-            !items.is_empty(),
+            has_next_page,
             first_item_cursor,
             last_item_cursor,
         )
@@ -207,14 +227,14 @@ mod tests {
             pub name: String,
         }
 
-        fn data() -> Vec<Location> {
+        fn data() -> Vec<Option<Location>> {
             vec![
-                Location {
+                Some(Location {
                     name: "Lumiére".to_owned(),
-                },
-                Location {
+                }),
+                Some(Location {
                     name: "Flying Waters".to_owned(),
-                },
+                }),
             ]
         }
 
@@ -228,10 +248,10 @@ mod tests {
                     total_count: Some(2),
                     page_request: None,
                 },
-                &data(),
+                Some(data().as_slice()),
             );
 
-            assert!(!pi.has_prev_page);
+            assert!(!pi.has_previous_page);
             assert!(!pi.has_next_page);
             assert_eq!(pi.start_cursor, Some(OffsetCursor::new(0)));
             assert_eq!(pi.end_cursor, Some(OffsetCursor::new(1)));
@@ -248,10 +268,10 @@ mod tests {
                     total_count: Some(27),
                     page_request: None,
                 },
-                &data(),
+                Some(data().as_slice()),
             );
 
-            assert!(!pi.has_prev_page);
+            assert!(!pi.has_previous_page);
             assert!(!pi.has_next_page);
             assert_eq!(pi.start_cursor, Some(OffsetCursor::new(0)));
             assert_eq!(pi.end_cursor, Some(OffsetCursor::new(1)));
@@ -270,10 +290,10 @@ mod tests {
                         before: None,
                     }),
                 },
-                &data(),
+                Some(data().as_slice()),
             );
 
-            assert!(!pi.has_prev_page);
+            assert!(!pi.has_previous_page);
             assert!(pi.has_next_page);
             assert_eq!(pi.start_cursor, Some(OffsetCursor::new(0)));
             assert_eq!(pi.end_cursor, Some(OffsetCursor::new(1)));
@@ -285,21 +305,21 @@ mod tests {
             let p = OffsetCursorProvider::new();
             let total_items = 13;
             let data = vec![
-                Location {
+                Some(Location {
                     name: "Lumiére".to_owned(),
-                },
-                Location {
+                }),
+                Some(Location {
                     name: "Spring Meadows".to_owned(),
-                },
-                Location {
+                }),
+                Some(Location {
                     name: "Flying Waters".to_owned(),
-                },
-                Location {
+                }),
+                Some(Location {
                     name: "Gestral Village".to_owned(),
-                },
-                Location {
+                }),
+                Some(Location {
                     name: "Stone Wave Cliffs".to_owned(),
-                },
+                }),
             ];
 
             let pi1 = p.get_page_info::<LocationRelayConnectionPageInfo>(
@@ -311,9 +331,9 @@ mod tests {
                         before: None,
                     }),
                 },
-                &data,
+                Some(&data),
             );
-            assert!(!pi1.has_prev_page);
+            assert!(!pi1.has_previous_page);
             assert!(pi1.has_next_page);
             assert_eq!(pi1.start_cursor, Some(OffsetCursor::new(0)));
             assert_eq!(pi1.end_cursor, Some(OffsetCursor::new(4)));
@@ -327,9 +347,9 @@ mod tests {
                         before: None,
                     }),
                 },
-                &data,
+                Some(&data),
             );
-            assert!(pi2.has_prev_page);
+            assert!(pi2.has_previous_page);
             assert!(pi2.has_next_page);
             assert_eq!(pi2.start_cursor, Some(OffsetCursor::new(5)));
             assert_eq!(pi2.end_cursor, Some(OffsetCursor::new(9)));
@@ -343,9 +363,9 @@ mod tests {
                         before: None,
                     }),
                 },
-                &[data[0].clone(), data[1].clone(), data[2].clone()],
+                Some(&[data[0].clone(), data[1].clone(), data[2].clone()]),
             );
-            assert!(pi3.has_prev_page);
+            assert!(pi3.has_previous_page);
             assert!(!pi3.has_next_page);
             assert_eq!(pi3.start_cursor, Some(OffsetCursor::new(10)));
             assert_eq!(pi3.end_cursor, Some(OffsetCursor::new(12)));
@@ -355,7 +375,7 @@ mod tests {
         fn test_page_info_empty_list() {
             let p = OffsetCursorProvider::new();
             let total_items = 0;
-            let data: Vec<String> = vec![];
+            let data: Vec<Option<String>> = vec![];
 
             let pi1 = p.get_page_info::<LocationRelayConnectionPageInfo>(
                 &PaginationMetadata {
@@ -366,9 +386,9 @@ mod tests {
                         before: None,
                     }),
                 },
-                &data,
+                Some(&data),
             );
-            assert!(!pi1.has_prev_page);
+            assert!(!pi1.has_previous_page);
             assert!(!pi1.has_next_page);
             assert_eq!(pi1.start_cursor, None);
             assert_eq!(pi1.end_cursor, None);
@@ -417,13 +437,13 @@ mod tests {
                 )),
             };
 
-            let i1_cursor = p.get_cursor_for_item(&meta, 0, &items[0]);
+            let i1_cursor = p.get_cursor_for_item(&meta, 0, Some(&items[0]));
             assert_eq!(i1_cursor.to_encoded_string(), "c3RyaW5nfHxpZC0x");
 
-            let i2_cursor = p.get_cursor_for_item(&meta, 1, &items[1]);
+            let i2_cursor = p.get_cursor_for_item(&meta, 1, Some(&items[1]));
             assert_eq!(i2_cursor.to_encoded_string(), "c3RyaW5nfHxpZC0y");
 
-            let i3_cursor = p.get_cursor_for_item(&meta, 2, &items[2]);
+            let i3_cursor = p.get_cursor_for_item(&meta, 2, Some(&items[2]));
             assert_eq!(i3_cursor.to_encoded_string(), "c3RyaW5nfHxpZC0z");
         }
 
@@ -431,15 +451,15 @@ mod tests {
         fn test_page_info_full_page() {
             let p = KeyedCursorProvider {};
             let items = vec![
-                NoSQLItem {
+                Some(NoSQLItem {
                     id: "id-1".to_string(),
-                },
-                NoSQLItem {
+                }),
+                Some(NoSQLItem {
                     id: "id-2".to_string(),
-                },
-                NoSQLItem {
+                }),
+                Some(NoSQLItem {
                     id: "id-3".to_string(),
-                },
+                }),
             ];
 
             let meta = PaginationMetadata {
@@ -451,8 +471,9 @@ mod tests {
                 }),
             };
 
-            let page_info = p.get_page_info::<NoSQLItemRelayConnectionPageInfo>(&meta, &items);
-            assert!(!page_info.has_prev_page);
+            let page_info =
+                p.get_page_info::<NoSQLItemRelayConnectionPageInfo>(&meta, Some(&items));
+            assert!(!page_info.has_previous_page);
             assert!(page_info.has_next_page); // assume next is true due to items being returned.
             assert_eq!(
                 page_info.start_cursor,
@@ -468,15 +489,15 @@ mod tests {
         fn test_page_info_first_page_of_many() {
             let p = KeyedCursorProvider {};
             let items = vec![
-                NoSQLItem {
+                Some(NoSQLItem {
                     id: "id-1".to_string(),
-                },
-                NoSQLItem {
+                }),
+                Some(NoSQLItem {
                     id: "id-2".to_string(),
-                },
-                NoSQLItem {
+                }),
+                Some(NoSQLItem {
                     id: "id-3".to_string(),
-                },
+                }),
             ];
 
             let meta = PaginationMetadata {
@@ -488,8 +509,9 @@ mod tests {
                 }),
             };
 
-            let page_info = p.get_page_info::<NoSQLItemRelayConnectionPageInfo>(&meta, &items);
-            assert!(!page_info.has_prev_page);
+            let page_info =
+                p.get_page_info::<NoSQLItemRelayConnectionPageInfo>(&meta, Some(&items));
+            assert!(!page_info.has_previous_page);
             assert!(page_info.has_next_page);
             assert_eq!(
                 page_info.start_cursor,
@@ -504,7 +526,7 @@ mod tests {
         #[test]
         fn test_page_info_last_page() {
             let p = KeyedCursorProvider {};
-            let items: Vec<NoSQLItem> = vec![];
+            let items: Vec<Option<NoSQLItem>> = vec![];
 
             let meta = PaginationMetadata {
                 total_count: Some(30), // More than the items returned, we have more items
@@ -515,8 +537,9 @@ mod tests {
                 }),
             };
 
-            let page_info = p.get_page_info::<NoSQLItemRelayConnectionPageInfo>(&meta, &items);
-            assert!(page_info.has_prev_page);
+            let page_info =
+                p.get_page_info::<NoSQLItemRelayConnectionPageInfo>(&meta, Some(&items));
+            assert!(page_info.has_previous_page);
             assert!(!page_info.has_next_page);
             assert_eq!(page_info.start_cursor, None);
             assert_eq!(page_info.end_cursor, None);

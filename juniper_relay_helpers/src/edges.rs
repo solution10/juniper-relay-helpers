@@ -6,5 +6,5 @@ pub trait RelayEdge {
     type CursorType: Cursor;
 
     /// New type taking a Cursor implementation
-    fn new(node: Self::NodeType, cursor: Self::CursorType) -> Self;
+    fn new(node: Option<Self::NodeType>, cursor: Self::CursorType) -> Self;
 }

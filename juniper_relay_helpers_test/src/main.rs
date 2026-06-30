@@ -132,7 +132,7 @@ mod integration_tests {
                         startCursor
                         endCursor
                         hasNextPage
-                        hasPrevPage
+                        hasPreviousPage
                     }
                 }
             }";
@@ -152,7 +152,7 @@ mod integration_tests {
                         startCursor
                         endCursor
                         hasNextPage
-                        hasPrevPage
+                        hasPreviousPage
                     }
                 }
             }";
@@ -240,7 +240,7 @@ mod integration_tests {
                             })),
                         "pageInfo": expect_json::object().contains(json!({
                             "hasNextPage": false,
-                            "hasPrevPage": false
+                            "hasPreviousPage": false
                         }))
                     }))
                 }))
@@ -279,7 +279,7 @@ mod integration_tests {
                             })),
                         "pageInfo": expect_json::object().contains(json!({
                             "hasNextPage": true,
-                            "hasPrevPage": false
+                            "hasPreviousPage": false
                         }))
                     }))
                 }))

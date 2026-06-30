@@ -15,7 +15,7 @@ pub trait RelayConnection {
     /// Builds a connection and associated edges from a Vec of the Nodes themselves. Pagination cursors
     /// can also be generated for you by providing the page info and CursorProvider trait instance.
     fn new<ProviderT>(
-        nodes: &[Self::NodeType],
+        nodes: Option<&[Option<Self::NodeType>]>,
         total_items: Option<i32>,
         cursor_provider: ProviderT,
         page_request: Option<crate::PageRequest<Self::CursorType>>,
@@ -40,40 +40,40 @@ mod tests {
     fn connection_types_are_generated() {
         let conn = UserRelayConnection {
             count: Some(12),
-            edges: vec![],
+            edges: Some(vec![]),
             page_info: UserRelayConnectionPageInfo {
                 start_cursor: None,
                 end_cursor: None,
-                has_prev_page: false,
+                has_previous_page: false,
                 has_next_page: false,
             },
         };
 
         assert_eq!(conn.count, Some(12));
-        assert_eq!(conn.edges.len(), 0);
+        assert_eq!(conn.edges.unwrap().len(), 0);
     }
 
     #[test]
     fn edge_types_are_generated() {
         let edge = UserRelayEdge {
-            node: User {
+            node: Some(User {
                 name: "Lune".to_owned(),
-            },
+            }),
             cursor: Some(OffsetCursor::new(527)),
         };
-        assert_eq!(edge.node.name, "Lune");
+        assert_eq!(edge.node.unwrap().name, "Lune");
         assert_eq!(edge.cursor, Some(OffsetCursor::new(527)));
     }
 
     #[test]
     fn edge_implementation_new() {
         let edge = UserRelayEdge::new(
-            User {
+            Some(User {
                 name: "Lune".to_owned(),
-            },
+            }),
             OffsetCursor::new(27),
         );
-        assert_eq!(edge.node.name, "Lune");
+        assert_eq!(edge.node.unwrap().name, "Lune");
         assert_eq!(edge.cursor, Some(OffsetCursor::new(27)));
     }
 }

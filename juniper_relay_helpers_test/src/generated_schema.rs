@@ -25,24 +25,24 @@ mod integration_tests {
         fn get_users() -> FieldResult<UserRelayConnection> {
             Ok(UserRelayConnection {
                 count: Some(12),
-                edges: vec![
-                    UserRelayEdge {
-                        node: User {
+                edges: Some(vec![
+                    Some(UserRelayEdge {
+                        node: Some(User {
                             name: "Lune".to_owned(),
-                        },
+                        }),
                         cursor: None,
-                    },
-                    UserRelayEdge {
-                        node: User {
+                    }),
+                    Some(UserRelayEdge {
+                        node: Some(User {
                             name: "Sciel".to_owned(),
-                        },
+                        }),
                         cursor: Some(StringCursor::new("some-string".to_string())),
-                    },
-                ],
+                    }),
+                ]),
                 page_info: UserRelayConnectionPageInfo {
                     start_cursor: None,
                     end_cursor: None,
-                    has_prev_page: false,
+                    has_previous_page: false,
                     has_next_page: false,
                 },
             })
@@ -51,11 +51,11 @@ mod integration_tests {
         fn get_posts() -> FieldResult<PostRelayConnection> {
             Ok(PostRelayConnection {
                 count: Some(0),
-                edges: vec![],
+                edges: Some(vec![]),
                 page_info: PostRelayConnectionPageInfo {
                     start_cursor: None,
                     end_cursor: None,
-                    has_prev_page: false,
+                    has_previous_page: false,
                     has_next_page: false,
                 },
             })
