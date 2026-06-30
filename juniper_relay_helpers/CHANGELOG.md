@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.0](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers-v0.6.0...juniper_relay_helpers-v0.7.0) - 2026-06-30
+
+### Added
+
+- [**breaking**] increase nullability for better fallback ([#38](https://github.com/solution10/juniper-relay-helpers/pull/38))
+
 ## [0.6.0](https://github.com/solution10/juniper-relay-helpers/compare/juniper_relay_helpers-v0.5.0...juniper_relay_helpers-v0.6.0) - 2026-06-29
 
 ### Added
